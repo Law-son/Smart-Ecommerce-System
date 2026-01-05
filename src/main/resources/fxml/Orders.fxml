@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="Order History" textAlignment="LEFT">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshOrdersBtn" text="Refresh" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </HBox>
+      
+      <Separator />
+      
+      <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
+         <columns>
+            <TableColumn text="Order ID" prefWidth="80" />
+            <TableColumn text="Date" prefWidth="120" />
+            <TableColumn text="Items" prefWidth="100" />
+            <TableColumn text="Total" prefWidth="100" />
+            <TableColumn text="Status" prefWidth="120" />
+         </columns>
+      </TableView>
+      
+      <Label fx:id="ordersPerfLabel" text="" textFill="GRAY" wrapText="true" />
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>
+
+

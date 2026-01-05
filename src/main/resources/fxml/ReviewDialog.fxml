@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label text="Add Review" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+      </Label>
+      
+      <Separator />
+      
+      <VBox spacing="10">
+         <children>
+            <Label text="Rating:" />
+            <ComboBox fx:id="ratingCombo" prefWidth="200">
+               <items>
+                  <FXCollections fx:factory="observableArrayList">
+                     <Integer fx:value="1" />
+                     <Integer fx:value="2" />
+                     <Integer fx:value="3" />
+                     <Integer fx:value="4" />
+                     <Integer fx:value="5" />
+                  </FXCollections>
+               </items>
+            </ComboBox>
+            
+            <Label text="Comment:" />
+            <TextArea fx:id="reviewComment" promptText="Enter your review comment..." prefRowCount="5" wrapText="true" />
+            
+            <Label fx:id="reviewErrorLabel" text="" textFill="RED" wrapText="true" />
+         </children>
+      </VBox>
+      
+      <HBox spacing="10" alignment="CENTER_RIGHT">
+         <children>
+            <Button fx:id="cancelReviewButton" text="Cancel" prefWidth="100" />
+            <Button fx:id="submitReviewButton" text="Submit" prefWidth="100" />
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>
+

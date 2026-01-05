@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label text="Shopping Cart" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      
+      <Separator />
+      
+      <Label fx:id="cartErrorLabel" text="" textFill="RED" wrapText="true" />
+      
+      <ListView fx:id="cartItemsList" VBox.vgrow="ALWAYS" />
+      
+      <HBox spacing="10" alignment="CENTER_RIGHT">
+         <children>
+            <Label text="Total:" />
+            <Label fx:id="cartTotalLabel" text="$0.00" textFill="GREEN">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+      
+      <HBox spacing="10" alignment="CENTER">
+         <children>
+            <Button fx:id="updateItemButton" text="Update Item" prefWidth="150" />
+            <Button fx:id="removeItemButton" text="Remove Item" prefWidth="150" />
+            <Button fx:id="checkoutButton" text="Checkout" prefWidth="150">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+         </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>
+
+

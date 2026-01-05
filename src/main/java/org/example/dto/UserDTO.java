@@ -7,7 +7,7 @@ package org.example.dto;
 public class UserDTO {
     private String fullName;
     private String email;
-    private String password; // Plain password for input only, not stored
+    private String password;
     private String role;
 
     // Default constructor

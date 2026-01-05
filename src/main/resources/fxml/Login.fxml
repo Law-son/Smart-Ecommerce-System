@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="20" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label text="Smart E-Commerce System" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <Label text="Login" textAlignment="CENTER">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      
+      <VBox spacing="10" alignment="CENTER" prefWidth="300">
+         <children>
+            <Label text="Email:" />
+            <TextField fx:id="emailField" promptText="Enter your email" prefWidth="300" />
+            
+            <Label text="Password:" />
+            <PasswordField fx:id="passwordField" promptText="Enter your password" prefWidth="300" />
+            
+            <Label fx:id="errorLabel" textFill="RED" text="" wrapText="true" prefWidth="300" />
+            
+            <HBox spacing="10" alignment="CENTER">
+               <children>
+                  <Button fx:id="loginButton" text="Login" prefWidth="140" />
+                  <Button fx:id="signupButton" text="Sign Up" prefWidth="140" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+   </padding>
+</VBox>
+
+

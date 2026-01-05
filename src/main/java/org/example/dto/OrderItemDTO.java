@@ -10,18 +10,15 @@ public class OrderItemDTO {
     private int quantity;
     private BigDecimal unitPrice;
 
-    // Default constructor
     public OrderItemDTO() {
     }
 
-    // Constructor
     public OrderItemDTO(int productId, int quantity, BigDecimal unitPrice) {
         this.productId = productId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
 
-    // Getters and Setters
     public int getProductId() {
         return productId;
     }

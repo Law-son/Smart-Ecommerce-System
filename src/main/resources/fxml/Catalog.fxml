@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox spacing="10" alignment="CENTER_LEFT">
+         <children>
+            <Label text="Search:" />
+            <TextField fx:id="searchField" promptText="Search products..." prefWidth="300" HBox.hgrow="ALWAYS" />
+            <Label text="Sort by:" />
+            <ComboBox fx:id="sortCombo" prefWidth="150">
+               <items>
+                  <FXCollections fx:factory="observableArrayList">
+                     <String fx:value="Price ↑" />
+                     <String fx:value="Price ↓" />
+                     <String fx:value="Name A-Z" />
+                     <String fx:value="Rating ↓" />
+                  </FXCollections>
+               </items>
+            </ComboBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </HBox>
+      
+      <Separator />
+      
+      <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+         <content>
+            <GridPane fx:id="productList" hgap="15" vgap="15">
+               <padding>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </padding>
+            </GridPane>
+         </content>
+      </ScrollPane>
+      
+      <HBox spacing="10" alignment="CENTER_RIGHT">
+         <children>
+            <Label fx:id="perfLabel" text="" textFill="GRAY" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="viewDetailsButton" text="View Details" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>
+
