@@ -3,46 +3,21 @@ package org.example.services;
 import org.example.dao.CategoryDAO;
 import org.example.dto.CategoryDTO;
 import org.example.models.Category;
+import org.example.utils.validators.CategoryValidator;
 
 import java.util.List;
 
 /**
- * Category service handling category validation and business rules.
+ * Category service handling category business operations.
+ * Follows Single Responsibility Principle by delegating validation to CategoryValidator.
  */
 public class CategoryService {
     private final CategoryDAO categoryDAO;
-    
-    // Maximum category name length
-    private static final int MAX_CATEGORY_NAME_LENGTH = 80;
+    private final CategoryValidator validator;
     
     public CategoryService() {
         this.categoryDAO = new CategoryDAO();
-    }
-    
-    /**
-     * Validates category data.
-     *
-     * @param categoryDTO Category data transfer object
-     * @return true if category is valid, false otherwise
-     */
-    public boolean validateCategory(CategoryDTO categoryDTO) {
-        if (categoryDTO == null) {
-            System.err.println("Category DTO cannot be null");
-            return false;
-        }
-        
-        String categoryName = categoryDTO.getCategoryName();
-        if (categoryName == null || categoryName.trim().isEmpty()) {
-            System.err.println("Category name cannot be null or empty");
-            return false;
-        }
-        
-        if (categoryName.length() > MAX_CATEGORY_NAME_LENGTH) {
-            System.err.println("Category name exceeds maximum length of " + MAX_CATEGORY_NAME_LENGTH + " characters");
-            return false;
-        }
-        
-        return true;
+        this.validator = new CategoryValidator();
     }
     
     /**
@@ -52,7 +27,18 @@ public class CategoryService {
      * @return true if category was created successfully, false otherwise
      */
     public boolean createCategory(CategoryDTO categoryDTO) {
-        if (!validateCategory(categoryDTO)) {
+        if (!validator.isValid(categoryDTO)) {
+            System.err.println("Invalid category data");
+            if (categoryDTO != null && categoryDTO.getCategoryName() != null) {
+                if (categoryDTO.getCategoryName().length() > validator.getMaxCategoryNameLength()) {
+                    System.err.println("Category name exceeds maximum length of " + 
+                                     validator.getMaxCategoryNameLength() + " characters");
+                } else if (categoryDTO.getCategoryName().trim().isEmpty()) {
+                    System.err.println("Category name cannot be null or empty");
+                }
+            } else {
+                System.err.println("Category DTO cannot be null");
+            }
             return false;
         }
         
@@ -90,7 +76,8 @@ public class CategoryService {
      * @return true if update successful, false otherwise
      */
     public boolean updateCategory(int id, CategoryDTO categoryDTO) {
-        if (!validateCategory(categoryDTO)) {
+        if (!validator.isValid(categoryDTO)) {
+            System.err.println("Invalid category data");
             return false;
         }
         
@@ -111,8 +98,3 @@ public class CategoryService {
         return categoryDAO.deleteCategory(id);
     }
 }
-
-
-
-
-

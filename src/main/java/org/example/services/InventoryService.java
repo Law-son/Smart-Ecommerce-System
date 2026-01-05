@@ -3,16 +3,19 @@ package org.example.services;
 import org.example.dao.InventoryDAO;
 import org.example.dto.InventoryDTO;
 import org.example.models.Inventory;
+import org.example.utils.PerformanceMonitor;
 
 /**
  * Inventory service handling stock validation and updates.
- * Manages inventory business rules and performance timing.
+ * Follows Single Responsibility Principle by delegating performance monitoring to PerformanceMonitor.
  */
 public class InventoryService {
     private final InventoryDAO inventoryDAO;
+    private final PerformanceMonitor performanceMonitor;
     
     public InventoryService() {
         this.inventoryDAO = new InventoryDAO();
+        this.performanceMonitor = new PerformanceMonitor();
     }
     
     /**
@@ -24,21 +27,18 @@ public class InventoryService {
      * @return true if sufficient stock is available, false otherwise
      */
     public boolean checkStock(int productId, int quantity) {
-        long startTime = System.currentTimeMillis();
-        
-        boolean available = inventoryDAO.checkStockAvailable(productId, quantity);
-        
-        long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
-        
-        if (available) {
-            System.out.println("[PERF] Stock check for product " + productId + " executed in " + duration + " ms - Available");
-        } else {
-            System.out.println("[PERF] Stock check for product " + productId + " executed in " + duration + " ms - Insufficient stock");
-            System.err.println("Insufficient stock for product " + productId + ". Requested " + quantity + ", Available " + getAvailableStock(productId));
-        }
-        
-        return available;
+        return performanceMonitor.monitor(
+            "Stock check for product " + productId,
+            () -> {
+                boolean available = inventoryDAO.checkStockAvailable(productId, quantity);
+                if (!available) {
+                    int availableStock = getAvailableStock(productId);
+                    System.err.println("Insufficient stock for product " + productId + 
+                                     ". Requested " + quantity + ", Available " + availableStock);
+                }
+                return available;
+            }
+        );
     }
     
     /**
@@ -73,7 +73,8 @@ public class InventoryService {
         boolean success = inventoryDAO.updateStock(productId, dto);
         
         if (success) {
-            System.out.println("[CACHE] Stock updated for product " + productId + " - cache should be invalidated if needed");
+            System.out.println("[CACHE] Stock updated for product " + productId + 
+                             " - cache should be invalidated if needed");
         }
         
         return success;
@@ -102,8 +103,3 @@ public class InventoryService {
         return updateStock(productId, newQuantity);
     }
 }
-
-
-
-
-

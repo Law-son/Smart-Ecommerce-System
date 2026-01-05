@@ -3,6 +3,7 @@ package org.example.services;
 import org.example.dao.ProductDAO;
 import org.example.dto.OrderItemDTO;
 import org.example.models.Product;
+import org.example.utils.CartCalculator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -13,10 +14,12 @@ import java.util.Map;
 /**
  * Cart service handling in-memory shopping cart operations.
  * Manages cart items, totals, and stock validation before checkout.
+ * Follows Single Responsibility Principle by delegating calculations to CartCalculator.
  */
 public class CartService {
     private final InventoryService inventoryService;
     private final ProductDAO productDAO;
+    private final CartCalculator calculator;
     
     // In-memory cart: productId -> OrderItemDTO
     private final Map<Integer, OrderItemDTO> cartItems;
@@ -24,6 +27,7 @@ public class CartService {
     public CartService() {
         this.inventoryService = new InventoryService();
         this.productDAO = new ProductDAO();
+        this.calculator = new CartCalculator();
         this.cartItems = new HashMap<>();
     }
     
@@ -154,14 +158,7 @@ public class CartService {
      * @return Total cart amount as BigDecimal
      */
     public BigDecimal calculateCartTotal() {
-        BigDecimal total = BigDecimal.ZERO;
-        
-        for (OrderItemDTO item : cartItems.values()) {
-            BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            total = total.add(itemTotal);
-        }
-        
-        return total;
+        return calculator.calculateTotal(new ArrayList<>(cartItems.values()));
     }
     
     /**
@@ -179,9 +176,7 @@ public class CartService {
      * @return Total quantity of all items
      */
     public int getTotalQuantity() {
-        return cartItems.values().stream()
-            .mapToInt(OrderItemDTO::getQuantity)
-            .sum();
+        return calculator.getTotalQuantity(new ArrayList<>(cartItems.values()));
     }
 }
 
