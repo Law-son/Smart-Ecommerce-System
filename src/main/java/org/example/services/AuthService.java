@@ -3,106 +3,25 @@ package org.example.services;
 import org.example.dao.UserDAO;
 import org.example.dto.UserDTO;
 import org.example.models.User;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.regex.Pattern;
+import org.example.utils.PasswordHasher;
+import org.example.utils.validators.EmailValidator;
+import org.example.utils.validators.PasswordValidator;
 
 /**
  * Authentication service handling user signup, login, and password management.
- * Handles password hashing, validation, and role routing logic.
+ * Follows Single Responsibility Principle by delegating validation and hashing to dedicated classes.
  */
 public class AuthService {
     private final UserDAO userDAO;
-    
-    // Email validation pattern
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
-    );
-    
-    // Password strength requirements
-    private static final int MIN_PASSWORD_LENGTH = 8;
+    private final PasswordHasher passwordHasher;
+    private final EmailValidator emailValidator;
+    private final PasswordValidator passwordValidator;
     
     public AuthService() {
         this.userDAO = new UserDAO();
-    }
-    
-    /**
-     * Hashes a password using SHA-256 algorithm.
-     *
-     * @param password Plain text password
-     * @return Hashed password as hexadecimal string
-     */
-    public String hashPassword(String password) {
-        if (password == null || password.isEmpty()) {
-            throw new IllegalArgumentException("Password cannot be null or empty");
-        }
-        
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            
-            // Convert bytes to hexadecimal string
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Error hashing password: SHA-256 algorithm not available");
-            e.printStackTrace();
-            throw new RuntimeException("Password hashing failed", e);
-        }
-    }
-    
-    /**
-     * Validates email format.
-     *
-     * @param email Email address to validate
-     * @return true if email format is valid, false otherwise
-     */
-    public boolean isValidEmail(String email) {
-        if (email == null || email.isEmpty()) {
-            return false;
-        }
-        return EMAIL_PATTERN.matcher(email).matches();
-    }
-    
-    /**
-     * Validates password strength.
-     *
-     * @param password Password to validate
-     * @return true if password meets strength requirements, false otherwise
-     */
-    public boolean isValidPassword(String password) {
-        if (password == null || password.isEmpty()) {
-            return false;
-        }
-        
-        // Check minimum length
-        if (password.length() < MIN_PASSWORD_LENGTH) {
-            return false;
-        }
-        
-        // Check for at least one letter and one number
-        boolean hasLetter = false;
-        boolean hasNumber = false;
-        
-        for (char c : password.toCharArray()) {
-            if (Character.isLetter(c)) {
-                hasLetter = true;
-            } else if (Character.isDigit(c)) {
-                hasNumber = true;
-            }
-        }
-        
-        return hasLetter && hasNumber;
+        this.passwordHasher = new PasswordHasher();
+        this.emailValidator = new EmailValidator();
+        this.passwordValidator = new PasswordValidator();
     }
     
     /**
@@ -114,15 +33,15 @@ public class AuthService {
      */
     public boolean signup(UserDTO userDTO) {
         // Validate email format
-        if (!isValidEmail(userDTO.getEmail())) {
+        if (!emailValidator.isValid(userDTO.getEmail())) {
             System.err.println("Invalid email format: " + userDTO.getEmail());
             return false;
         }
         
         // Validate password strength
-        if (!isValidPassword(userDTO.getPassword())) {
+        if (!passwordValidator.isValid(userDTO.getPassword())) {
             System.err.println("Password does not meet strength requirements. Must be at least " + 
-                             MIN_PASSWORD_LENGTH + " characters with letters and numbers.");
+                             passwordValidator.getMinPasswordLength() + " characters with letters and numbers.");
             return false;
         }
         
@@ -134,11 +53,11 @@ public class AuthService {
         }
         
         // Hash password before storing
-        String hashedPassword = hashPassword(userDTO.getPassword());
+        String hashedPassword = passwordHasher.hash(userDTO.getPassword());
         UserDTO hashedUserDTO = new UserDTO();
         hashedUserDTO.setFullName(userDTO.getFullName());
         hashedUserDTO.setEmail(userDTO.getEmail());
-        hashedUserDTO.setPassword(hashedPassword); // Store hashed password
+        hashedUserDTO.setPassword(hashedPassword);
         hashedUserDTO.setRole(userDTO.getRole() != null ? userDTO.getRole() : "CUSTOMER");
         
         // Create user via DAO
@@ -173,7 +92,7 @@ public class AuthService {
         }
         
         // Hash the provided password and compare with stored hash
-        String hashedPassword = hashPassword(plainPassword);
+        String hashedPassword = passwordHasher.hash(plainPassword);
         if (hashedPassword.equals(user.getPasswordHash())) {
             System.out.println("Login successful for user: " + email);
             return user;
@@ -207,26 +126,21 @@ public class AuthService {
      */
     public boolean updateUser(int userId, UserDTO userDTO) {
         // Validate email if provided
-        if (userDTO.getEmail() != null && !isValidEmail(userDTO.getEmail())) {
+        if (userDTO.getEmail() != null && !emailValidator.isValid(userDTO.getEmail())) {
             System.err.println("Invalid email format: " + userDTO.getEmail());
             return false;
         }
         
         // Hash password if provided
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            if (!isValidPassword(userDTO.getPassword())) {
+            if (!passwordValidator.isValid(userDTO.getPassword())) {
                 System.err.println("Password does not meet strength requirements");
                 return false;
             }
-            String hashedPassword = hashPassword(userDTO.getPassword());
+            String hashedPassword = passwordHasher.hash(userDTO.getPassword());
             userDTO.setPassword(hashedPassword);
         }
         
         return userDAO.updateUser(userId, userDTO);
     }
 }
-
-
-
-
-

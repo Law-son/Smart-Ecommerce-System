@@ -1,38 +1,33 @@
 package org.example.services;
 
 import org.example.dao.OrderDAO;
-import org.example.dao.OrderItemDAO;
 import org.example.dto.OrderDTO;
 import org.example.dto.OrderItemDTO;
 import org.example.models.Order;
+import org.example.utils.PerformanceMonitor;
+import org.example.utils.cache.OrderCacheManager;
+import org.example.utils.mappers.OrderMapper;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Order service handling order creation, status updates, and caching.
- * Manages order business rules and performance timing.
+ * Follows Single Responsibility Principle by delegating caching, mapping, and performance monitoring to dedicated classes.
  */
 public class OrderService {
     private final OrderDAO orderDAO;
-    private final OrderItemDAO orderItemDAO;
     private final InventoryService inventoryService;
-    
-    // Cache for recent orders: userId -> List<OrderDTO>
-    private final Map<Integer, List<OrderDTO>> userOrderCache;
-    
-    // Cache for order lookup: orderId -> OrderDTO
-    private final Map<Integer, OrderDTO> orderCache;
+    private final OrderCacheManager cacheManager;
+    private final OrderMapper mapper;
+    private final PerformanceMonitor performanceMonitor;
     
     public OrderService() {
         this.orderDAO = new OrderDAO();
-        this.orderItemDAO = new OrderItemDAO();
         this.inventoryService = new InventoryService();
-        this.userOrderCache = new HashMap<>();
-        this.orderCache = new HashMap<>();
+        this.cacheManager = new OrderCacheManager();
+        this.mapper = new OrderMapper();
+        this.performanceMonitor = new PerformanceMonitor();
     }
     
     /**
@@ -87,7 +82,7 @@ public class OrderService {
                 }
                 
                 // Invalidate cache
-                invalidateUserOrderCache(userId);
+                cacheManager.invalidateUserCache(userId);
                 
                 System.out.println("Order created successfully with ID: " + orderId);
                 return orderId;
@@ -105,25 +100,29 @@ public class OrderService {
      * @return List of Order objects
      */
     public List<Order> getOrdersByUser(int userId) {
-        long startTime = System.currentTimeMillis();
-        
-        // Fetch from database
-        List<Order> orders = orderDAO.getOrdersByUser(userId);
-        
-        // Cache the results as DTOs for quick lookup
-        List<OrderDTO> orderDTOs = convertOrdersToDTOs(orders);
-        userOrderCache.put(userId, orderDTOs);
-        
-        // Also cache individual orders
-        for (Order order : orders) {
-            OrderDTO dto = convertOrderToDTO(order);
-            orderCache.put(order.getOrderId(), dto);
-        }
-        
-        long endTime = System.currentTimeMillis();
-        System.out.println("[PERF] getOrdersByUser executed in " + (endTime - startTime) + " ms");
-        
-        return orders;
+        return performanceMonitor.monitor("getOrdersByUser", () -> {
+            // Check cache first
+            List<OrderDTO> cachedDTOs = cacheManager.getByUser(userId);
+            if (cachedDTOs != null) {
+                // For simplicity, fetch from DB to get full Order objects
+                // In a real system, you might want to cache full Order objects
+            }
+            
+            // Fetch from database
+            List<Order> orders = orderDAO.getOrdersByUser(userId);
+            
+            // Cache the results as DTOs
+            List<OrderDTO> orderDTOs = mapper.toDTOList(orders);
+            cacheManager.putByUser(userId, orderDTOs);
+            
+            // Also cache individual orders
+            for (Order order : orders) {
+                OrderDTO dto = mapper.toDTO(order);
+                cacheManager.put(order.getOrderId(), dto);
+            }
+            
+            return orders;
+        });
     }
     
     /**
@@ -132,20 +131,17 @@ public class OrderService {
      * @return List of all Order objects
      */
     public List<Order> getAllOrders() {
-        long startTime = System.currentTimeMillis();
-        
-        List<Order> orders = orderDAO.getAllOrders();
-        
-        // Cache the results
-        for (Order order : orders) {
-            OrderDTO dto = convertOrderToDTO(order);
-            orderCache.put(order.getOrderId(), dto);
-        }
-        
-        long endTime = System.currentTimeMillis();
-        System.out.println("[PERF] getAllOrders executed in " + (endTime - startTime) + " ms");
-        
-        return orders;
+        return performanceMonitor.monitor("getAllOrders", () -> {
+            List<Order> orders = orderDAO.getAllOrders();
+            
+            // Cache the results
+            for (Order order : orders) {
+                OrderDTO dto = mapper.toDTO(order);
+                cacheManager.put(order.getOrderId(), dto);
+            }
+            
+            return orders;
+        });
     }
     
     /**
@@ -156,25 +152,22 @@ public class OrderService {
      * @return true if update successful, false otherwise
      */
     public boolean updateOrderStatus(int orderId, String status) {
-        long startTime = System.currentTimeMillis();
-        
-        boolean success = orderDAO.updateOrderStatus(orderId, status);
-        
-        if (success) {
-            // Invalidate caches
-            invalidateOrderCache(orderId);
+        return performanceMonitor.monitor("updateOrderStatus", () -> {
+            boolean success = orderDAO.updateOrderStatus(orderId, status);
             
-            // Get order to find userId for cache invalidation
-            Order order = orderDAO.getOrderById(orderId);
-            if (order != null) {
-                invalidateUserOrderCache(order.getUserId());
+            if (success) {
+                // Invalidate caches
+                cacheManager.invalidateOrder(orderId);
+                
+                // Get order to find userId for cache invalidation
+                Order order = orderDAO.getOrderById(orderId);
+                if (order != null) {
+                    cacheManager.invalidateUserCache(order.getUserId());
+                }
             }
-        }
-        
-        long endTime = System.currentTimeMillis();
-        System.out.println("[PERF] updateOrderStatus executed in " + (endTime - startTime) + " ms");
-        
-        return success;
+            
+            return success;
+        });
     }
     
     /**
@@ -185,9 +178,10 @@ public class OrderService {
      */
     public Order getOrderById(int orderId) {
         // Check cache first
-        if (orderCache.containsKey(orderId)) {
-            OrderDTO dto = orderCache.get(orderId);
-            return convertOrderDTOToOrder(dto, orderId);
+        OrderDTO cachedDTO = cacheManager.getById(orderId);
+        if (cachedDTO != null) {
+            // For full Order object, fetch from DB
+            // In a real system, you might want to cache full Order objects
         }
         
         return orderDAO.getOrderById(orderId);
@@ -207,74 +201,4 @@ public class OrderService {
         }
         return total;
     }
-    
-    /**
-     * Invalidates order cache for a specific order.
-     *
-     * @param orderId Order ID
-     */
-    private void invalidateOrderCache(int orderId) {
-        if (orderCache.remove(orderId) != null) {
-            System.out.println("[CACHE] Order cache invalidated for order: " + orderId);
-        }
-    }
-    
-    /**
-     * Invalidates user order cache.
-     *
-     * @param userId User ID
-     */
-    private void invalidateUserOrderCache(int userId) {
-        if (userOrderCache.remove(userId) != null) {
-            System.out.println("[CACHE] User order cache invalidated for user: " + userId);
-        }
-    }
-    
-    /**
-     * Converts Order to OrderDTO.
-     */
-    private OrderDTO convertOrderToDTO(Order order) {
-        OrderDTO dto = new OrderDTO();
-        dto.setUserId(order.getUserId());
-        dto.setStatus(order.getStatus());
-        dto.setTotalAmount(order.getTotalAmount());
-        // Items would need to be fetched separately
-        dto.setItems(new ArrayList<>());
-        return dto;
-    }
-    
-    /**
-     * Converts OrderDTO to Order.
-     */
-    private Order convertOrderDTOToOrder(OrderDTO dto, int orderId) {
-        Order order = new Order();
-        order.setOrderId(orderId);
-        order.setUserId(dto.getUserId());
-        order.setStatus(dto.getStatus());
-        order.setTotalAmount(dto.getTotalAmount());
-        return order;
-    }
-    
-    /**
-     * Converts list of Orders to OrderDTOs.
-     */
-    private List<OrderDTO> convertOrdersToDTOs(List<Order> orders) {
-        List<OrderDTO> dtos = new ArrayList<>();
-        for (Order order : orders) {
-            dtos.add(convertOrderToDTO(order));
-        }
-        return dtos;
-    }
-    
-    /**
-     * Converts list of OrderDTOs to Orders.
-     * Note: This is a simplified conversion. For full conversion, we'd need to fetch from DB.
-     */
-    private List<Order> convertOrderDTOsToOrders(List<OrderDTO> dtos) {
-        // For cache hits, we should fetch from database to get full Order objects
-        // This is a limitation of caching DTOs instead of full models
-        // For now, return empty list and let the method fetch from DB
-        return new ArrayList<>();
-    }
 }
-
