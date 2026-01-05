@@ -12,11 +12,9 @@ public class ProductDTO {
     private int categoryId;
     private String imageUrl;
 
-    // Default constructor
     public ProductDTO() {
     }
 
-    // Constructor
     public ProductDTO(String name, String description, BigDecimal price, int categoryId, String imageUrl) {
         this.name = name;
         this.description = description;
@@ -25,7 +23,6 @@ public class ProductDTO {
         this.imageUrl = imageUrl;
     }
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

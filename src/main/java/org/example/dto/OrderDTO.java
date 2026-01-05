@@ -14,12 +14,10 @@ public class OrderDTO {
     private BigDecimal totalAmount;
     private List<OrderItemDTO> items;
 
-    // Default constructor
     public OrderDTO() {
         this.items = new ArrayList<>();
     }
 
-    // Constructor
     public OrderDTO(int userId, String status, BigDecimal totalAmount, List<OrderItemDTO> items) {
         this.userId = userId;
         this.status = status;
@@ -27,7 +25,6 @@ public class OrderDTO {
         this.items = items != null ? items : new ArrayList<>();
     }
 
-    // Getters and Setters
     public int getUserId() {
         return userId;
     }

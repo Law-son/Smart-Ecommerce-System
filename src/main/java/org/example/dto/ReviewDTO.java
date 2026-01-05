@@ -9,11 +9,9 @@ public class ReviewDTO {
     private int rating;
     private String comment;
 
-    // Default constructor
     public ReviewDTO() {
     }
 
-    // Constructor
     public ReviewDTO(int userId, int productId, int rating, String comment) {
         this.userId = userId;
         this.productId = productId;
@@ -21,7 +19,6 @@ public class ReviewDTO {
         this.comment = comment;
     }
 
-    // Getters and Setters
     public int getUserId() {
         return userId;
     }

@@ -6,16 +6,13 @@ package org.example.dto;
 public class CategoryDTO {
     private String categoryName;
 
-    // Default constructor
     public CategoryDTO() {
     }
 
-    // Constructor
     public CategoryDTO(String categoryName) {
         this.categoryName = categoryName;
     }
 
-    // Getters and Setters
     public String getCategoryName() {
         return categoryName;
     }
