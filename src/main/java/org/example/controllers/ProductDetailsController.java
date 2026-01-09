@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.Scene;
+import javafx.stage.Stage;
 import org.example.dao.ProductDAO;
 import org.example.dto.ProductDTO;
 import org.example.dto.ReviewDTO;
@@ -120,41 +121,77 @@ public class ProductDetailsController implements Initializable {
      * Loads and displays product details.
      */
     private void loadProductDetails(Product product) {
-        productName.setText(product.getName());
-        productPrice.setText("$" + product.getPrice());
-        productDesc.setText(product.getDescription());
-        
-        // Load image if URL is provided
-        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            try {
-                Image image = new Image(product.getImageUrl());
-                productImage.setImage(image);
-            } catch (Exception e) {
-                System.err.println("Error loading product image: " + e.getMessage());
-            }
+        if (product == null) {
+            System.err.println("Product is null, cannot load details");
+            return;
         }
         
-        // Load average rating
-        double avgRating = reviewService.getAverageRating(product.getProductId());
-        avgRatingLabel.setText(String.format("Rating: %.1f / 5.0", avgRating));
+        try {
+            productName.setText(product.getName() != null ? product.getName() : "Unknown Product");
+            productPrice.setText(product.getPrice() != null ? "$" + product.getPrice() : "$0.00");
+            productDesc.setText(product.getDescription() != null ? product.getDescription() : "No description available");
+            
+            // Load image if URL is provided
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                try {
+                    Image image = new Image(product.getImageUrl());
+                    productImage.setImage(image);
+                } catch (Exception e) {
+                    System.err.println("Error loading product image: " + e.getMessage());
+                    productImage.setImage(null);
+                }
+            } else {
+                productImage.setImage(null);
+            }
+            
+            // Load average rating (uses cached or computed values from ReviewService)
+            if (product.getProductId() > 0) {
+                double avgRating = reviewService.getAverageRating(product.getProductId());
+                avgRatingLabel.setText(String.format("Rating: %.1f / 5.0", avgRating));
+            } else {
+                avgRatingLabel.setText("Rating: N/A");
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading product details: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**
      * Loads and displays reviews for the product.
      */
     private void loadReviews() {
-        List<Review> reviews = reviewService.getReviewsByProduct(currentProductId);
-        reviewsList.getItems().clear();
-        
-        for (Review review : reviews) {
-            String reviewText = String.format("Rating: %d/5 - %s", 
-                review.getRating(), 
-                review.getComment() != null ? review.getComment() : "No comment");
-            reviewsList.getItems().add(reviewText);
-        }
-        
-        if (reviews.isEmpty()) {
-            reviewsList.getItems().add("No reviews yet. Be the first to review!");
+        try {
+            if (currentProductId <= 0) {
+                reviewsList.getItems().clear();
+                reviewsList.getItems().add("Invalid product ID");
+                return;
+            }
+            
+            List<Review> reviews = reviewService.getReviewsByProduct(currentProductId);
+            reviewsList.getItems().clear();
+            
+            if (reviews == null) {
+                reviews = new java.util.ArrayList<>();
+            }
+            
+            for (Review review : reviews) {
+                if (review != null) {
+                    String reviewText = String.format("Rating: %d/5 - %s", 
+                        review.getRating(), 
+                        review.getComment() != null ? review.getComment() : "No comment");
+                    reviewsList.getItems().add(reviewText);
+                }
+            }
+            
+            if (reviews.isEmpty()) {
+                reviewsList.getItems().add("No reviews yet. Be the first to review!");
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading reviews: " + e.getMessage());
+            e.printStackTrace();
+            reviewsList.getItems().clear();
+            reviewsList.getItems().add("Error loading reviews. Please try again.");
         }
     }
     
@@ -162,15 +199,32 @@ public class ProductDetailsController implements Initializable {
      * Handles add review button click.
      */
     private void handleAddReview() {
-        Scene scene = addReviewButton.getScene();
-        if (scene != null) {
-            // Store product ID for review dialog
-            ReviewDialogController.setProductId(currentProductId);
-            Stage dialogStage = NavigationHelper.openDialog("ReviewDialog.fxml", NavigationHelper.getStage(scene));
-            if (dialogStage != null) {
-                // Reload reviews after dialog closes
-                dialogStage.setOnCloseRequest(e -> loadReviews());
+        try {
+            Scene scene = addReviewButton.getScene();
+            if (scene != null) {
+                // Store product ID for review dialog
+                ReviewDialogController.setProductId(currentProductId);
+                Stage dialogStage = NavigationHelper.openDialog("ReviewDialog.fxml", NavigationHelper.getStage(scene));
+                if (dialogStage != null) {
+                    // Reload reviews after dialog closes and refresh average rating
+                    dialogStage.setOnCloseRequest(e -> {
+                        loadReviews();
+                        // Refresh average rating
+                        if (currentProductId > 0) {
+                            double avgRating = reviewService.getAverageRating(currentProductId);
+                            avgRatingLabel.setText(String.format("Rating: %.1f / 5.0", avgRating));
+                        }
+                    });
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error opening review dialog: " + e.getMessage());
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Failed to open review dialog. Please try again.");
+            alert.showAndWait();
         }
     }
     
@@ -178,19 +232,38 @@ public class ProductDetailsController implements Initializable {
      * Handles add to cart button click.
      */
     private void handleAddToCart() {
-        boolean success = cartService.addToCart(currentProductId, 1);
-        
-        if (success) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText(null);
-            alert.setContentText("Product added to cart successfully!");
-            alert.showAndWait();
-        } else {
+        try {
+            if (currentProductId <= 0) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Invalid product. Cannot add to cart.");
+                alert.showAndWait();
+                return;
+            }
+            
+            boolean success = cartService.addToCart(currentProductId, 1);
+            
+            if (success) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Product added to cart successfully!");
+                alert.showAndWait();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Failed to add product to cart. Check stock availability.");
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            System.err.println("Error adding product to cart: " + e.getMessage());
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText(null);
-            alert.setContentText("Failed to add product to cart. Check stock availability.");
+            alert.setContentText("An error occurred while adding product to cart. Please try again.");
             alert.showAndWait();
         }
     }

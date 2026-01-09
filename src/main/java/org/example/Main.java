@@ -23,7 +23,7 @@ public class Main extends Application {
             Scene scene = new Scene(root, 600, 400);
             primaryStage.setTitle("Smart E-Commerce System - Login");
             primaryStage.setScene(scene);
-            primaryStage.setResizable(false);
+            primaryStage.setResizable(true); // Enable resizable UI globally
             primaryStage.show();
         } catch (Exception e) {
             System.err.println("Error loading application: " + e.getMessage());

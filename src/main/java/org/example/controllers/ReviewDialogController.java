@@ -99,19 +99,22 @@ public class ReviewDialogController implements Initializable {
         boolean success = reviewService.submitReview(reviewDTO);
         
         if (success) {
-            // Close dialog
-            Stage stage = (Stage) submitReviewButton.getScene().getWindow();
-            stage.close();
-            
             // Show success message
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Review Submitted");
             alert.setHeaderText(null);
             alert.setContentText("Your review has been submitted successfully!");
             alert.showAndWait();
+            
+            // Close dialog - this will trigger the onCloseRequest handler in ProductDetailsController
+            // which will refresh the reviews list
+            Stage stage = (Stage) submitReviewButton.getScene().getWindow();
+            stage.close();
         } else {
             reviewErrorLabel.setText("Failed to submit review. Please check your input and try again.");
         }
     }
 }
+
+
 

@@ -73,24 +73,41 @@ public class OrdersController implements Initializable {
      * Loads orders based on user role.
      */
     private void loadOrders() {
-        long startTime = System.currentTimeMillis();
-        
-        List<Order> orders;
-        
-        if (sessionManager.isAdmin()) {
-            // Admin sees all orders
-            orders = orderService.getAllOrders();
-        } else {
-            // Customer sees only their orders
-            int userId = sessionManager.getCurrentUserId();
-            orders = orderService.getOrdersByUser(userId);
+        try {
+            List<Order> orders;
+            
+            if (sessionManager.isAdmin()) {
+                // Admin sees all orders
+                orders = orderService.getAllOrders();
+            } else {
+                // Customer sees only their orders
+                int userId = sessionManager.getCurrentUserId();
+                if (userId <= 0) {
+                    ordersPerfLabel.setText("Error: Invalid user session");
+                    ordersTable.getItems().clear();
+                    return;
+                }
+                orders = orderService.getOrdersByUser(userId);
+            }
+            
+            if (orders == null) {
+                orders = new java.util.ArrayList<>();
+                ordersPerfLabel.setText("Error: Failed to load orders");
+                ordersTable.getItems().clear();
+                return;
+            }
+            
+            ordersTable.getItems().clear();
+            ordersTable.getItems().addAll(orders);
+            
+            // Performance timing is logged by OrderService via PerformanceMonitor
+            ordersPerfLabel.setText("Loaded " + orders.size() + " orders (check console for performance timing)");
+        } catch (Exception e) {
+            System.err.println("Error loading orders: " + e.getMessage());
+            e.printStackTrace();
+            ordersPerfLabel.setText("Error loading orders. Please try again.");
+            ordersTable.getItems().clear();
         }
-        
-        ordersTable.getItems().clear();
-        ordersTable.getItems().addAll(orders);
-        
-        long endTime = System.currentTimeMillis();
-        ordersPerfLabel.setText("Loaded " + orders.size() + " orders in " + (endTime - startTime) + " ms");
     }
     
     /**
@@ -103,4 +120,6 @@ public class OrdersController implements Initializable {
         }
     }
 }
+
+
 
