@@ -70,68 +70,106 @@ public class CatalogController implements Initializable {
      * Loads all products and displays them.
      */
     private void loadProducts() {
-        long startTime = System.currentTimeMillis();
-        
-        List<ProductDTO> products = productService.getAllProducts();
-        
-        long endTime = System.currentTimeMillis();
-        perfLabel.setText("Loaded " + products.size() + " products in " + (endTime - startTime) + " ms");
-        
-        displayProducts(products);
+        try {
+            List<ProductDTO> products = productService.getAllProducts();
+            
+            if (products == null) {
+                products = new java.util.ArrayList<>();
+                perfLabel.setText("Error: Failed to load products");
+                return;
+            }
+            
+            // Performance timing is logged by ProductService via PerformanceMonitor
+            // Display product count and note that timing is in console
+            perfLabel.setText("Loaded " + products.size() + " products (check console for performance timing)");
+            
+            displayProducts(products);
+        } catch (Exception e) {
+            System.err.println("Error loading products: " + e.getMessage());
+            e.printStackTrace();
+            perfLabel.setText("Error loading products. Please try again.");
+            displayProducts(new java.util.ArrayList<>());
+        }
     }
     
     /**
      * Handles search field input.
      */
     private void handleSearch() {
-        String keyword = searchField.getText().trim();
-        
-        long startTime = System.currentTimeMillis();
-        List<ProductDTO> products;
-        
-        if (keyword.isEmpty()) {
-            products = productService.getAllProducts();
-        } else {
-            products = productService.searchProductsByName(keyword);
+        try {
+            String keyword = searchField.getText().trim();
+            
+            List<ProductDTO> products;
+            
+            if (keyword.isEmpty()) {
+                products = productService.getAllProducts();
+            } else {
+                products = productService.searchProductsByName(keyword);
+            }
+            
+            if (products == null) {
+                products = new java.util.ArrayList<>();
+                perfLabel.setText("Error: Search failed");
+                displayProducts(products);
+                return;
+            }
+            
+            // Performance timing is logged by ProductService via PerformanceMonitor
+            perfLabel.setText("Found " + products.size() + " products (check console for performance timing)");
+            
+            displayProducts(products);
+        } catch (Exception e) {
+            System.err.println("Error during search: " + e.getMessage());
+            e.printStackTrace();
+            perfLabel.setText("Error during search. Please try again.");
+            displayProducts(new java.util.ArrayList<>());
         }
-        
-        long endTime = System.currentTimeMillis();
-        perfLabel.setText("Search completed in " + (endTime - startTime) + " ms");
-        
-        displayProducts(products);
     }
     
     /**
      * Handles sort combo selection.
      */
     private void handleSort() {
-        String sortOption = sortCombo.getValue();
-        if (sortOption == null) return;
-        
-        long startTime = System.currentTimeMillis();
-        List<ProductDTO> products;
-        
-        switch (sortOption) {
-            case "Price ↑":
-                products = productService.sortProductsByPrice(true);
-                break;
-            case "Price ↓":
-                products = productService.sortProductsByPrice(false);
-                break;
-            case "Name A-Z":
-                products = productService.sortProductsByName();
-                break;
-            case "Rating ↓":
-                products = productService.sortProductsByRating();
-                break;
-            default:
-                products = productService.getAllProducts();
+        try {
+            String sortOption = sortCombo.getValue();
+            if (sortOption == null) return;
+            
+            List<ProductDTO> products;
+            
+            switch (sortOption) {
+                case "Price ↑":
+                    products = productService.sortProductsByPrice(true);
+                    break;
+                case "Price ↓":
+                    products = productService.sortProductsByPrice(false);
+                    break;
+                case "Name A-Z":
+                    products = productService.sortProductsByName();
+                    break;
+                case "Rating ↓":
+                    products = productService.sortProductsByRating();
+                    break;
+                default:
+                    products = productService.getAllProducts();
+            }
+            
+            if (products == null) {
+                products = new java.util.ArrayList<>();
+                perfLabel.setText("Error: Sort failed");
+                displayProducts(products);
+                return;
+            }
+            
+            // Performance timing is logged by ProductService via PerformanceMonitor
+            perfLabel.setText("Sorted " + products.size() + " products (check console for performance timing)");
+            
+            displayProducts(products);
+        } catch (Exception e) {
+            System.err.println("Error during sort: " + e.getMessage());
+            e.printStackTrace();
+            perfLabel.setText("Error during sort. Please try again.");
+            displayProducts(new java.util.ArrayList<>());
         }
-        
-        long endTime = System.currentTimeMillis();
-        perfLabel.setText("Sort completed in " + (endTime - startTime) + " ms");
-        
-        displayProducts(products);
     }
     
     /**

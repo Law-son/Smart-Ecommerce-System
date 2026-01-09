@@ -114,7 +114,11 @@ public class DashboardController implements Initializable {
      * Handles logout action.
      */
     private void handleLogout() {
-        // Clear session
+        // Clear session via AuthService
+        org.example.services.AuthService authService = new org.example.services.AuthService();
+        authService.logout();
+        
+        // Clear session manager
         sessionManager.clearSession();
         
         // Navigate to login
@@ -131,4 +135,6 @@ public class DashboardController implements Initializable {
         }
     }
 }
+
+
 

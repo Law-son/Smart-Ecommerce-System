@@ -31,6 +31,7 @@ public class NavigationHelper {
             Scene scene = new Scene(root);
             currentStage.setScene(scene);
             currentStage.setTitle(getTitleFromFxml(fxmlFile));
+            currentStage.setResizable(true); // Ensure all screens are resizable
             currentStage.show();
             
             return true;
@@ -59,6 +60,7 @@ public class NavigationHelper {
             dialogStage.initStyle(StageStyle.UTILITY);
             dialogStage.setScene(new Scene(root));
             dialogStage.setTitle(getTitleFromFxml(fxmlFile));
+            dialogStage.setResizable(true); // Enable resizable UI for dialogs
             dialogStage.show();
             
             return dialogStage;
@@ -90,4 +92,6 @@ public class NavigationHelper {
         return (Stage) scene.getWindow();
     }
 }
+
+
 

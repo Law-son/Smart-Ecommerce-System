@@ -163,36 +163,58 @@ public class CartController implements Initializable {
      * Handles checkout button click.
      */
     private void handleCheckout() {
-        if (currentCartItems.isEmpty()) {
+        cartErrorLabel.setText("");
+        
+        if (currentCartItems == null || currentCartItems.isEmpty()) {
             cartErrorLabel.setText("Cart is empty. Cannot checkout.");
             return;
         }
         
-        // Validate stock for all items
-        for (OrderItemDTO item : currentCartItems) {
-            // Stock validation is done in CartService, but we can double-check here
-            // The OrderService will also validate before creating order
+        // Validate user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            cartErrorLabel.setText("You must be logged in to checkout.");
+            navigateToLogin();
+            return;
         }
         
-        // Create order via OrderService
-        int userId = sessionManager.getCurrentUserId();
-        int orderId = orderService.createOrder(userId, currentCartItems);
+        // Calculate cart total
+        BigDecimal cartTotal = cartService.calculateCartTotal();
+        if (cartTotal == null || cartTotal.compareTo(BigDecimal.ZERO) <= 0) {
+            cartErrorLabel.setText("Invalid cart total. Please check your cart items.");
+            return;
+        }
         
-        if (orderId > 0) {
-            // Clear cart
-            cartService.clearCart();
+        // Create order via OrderService (this validates stock internally)
+        int userId = sessionManager.getCurrentUserId();
+        if (userId <= 0) {
+            cartErrorLabel.setText("Invalid user session. Please login again.");
+            navigateToLogin();
+            return;
+        }
+        
+        try {
+            int orderId = orderService.createOrder(userId, currentCartItems);
             
-            // Show success message
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Order Placed");
-            alert.setHeaderText(null);
-            alert.setContentText("Order #" + orderId + " has been placed successfully!");
-            alert.showAndWait();
-            
-            // Navigate to orders screen
-            navigateToOrders();
-        } else {
-            cartErrorLabel.setText("Failed to create order. Please check stock availability and try again.");
+            if (orderId > 0) {
+                // Clear cart after successful order creation
+                cartService.clearCart();
+                
+                // Show success message
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Order Placed");
+                alert.setHeaderText(null);
+                alert.setContentText("Order #" + orderId + " has been placed successfully!\nTotal: $" + cartTotal);
+                alert.showAndWait();
+                
+                // Navigate to orders screen
+                navigateToOrders();
+            } else {
+                cartErrorLabel.setText("Failed to create order. Please check stock availability and try again.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error during checkout: " + e.getMessage());
+            e.printStackTrace();
+            cartErrorLabel.setText("An error occurred during checkout. Please try again.");
         }
     }
     
@@ -224,4 +246,6 @@ public class CartController implements Initializable {
         }
     }
 }
+
+
 

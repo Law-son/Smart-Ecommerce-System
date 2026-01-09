@@ -59,32 +59,46 @@ public class LoginController implements Initializable {
      * Handles login button click.
      */
     private void handleLogin() {
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
-        
-        // Clear previous errors
-        errorLabel.setText("");
-        
-        // Validate input
-        if (email.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("Please enter both email and password");
-            return;
-        }
-        
-        // Attempt login via AuthService
-        User user = authService.login(email, password);
-        
-        if (user != null) {
-            // Store user in session
-            sessionManager.setCurrentUser(user);
+        try {
+            String email = emailField.getText().trim();
+            String password = passwordField.getText();
             
-            // Navigate to Dashboard
-            Scene scene = loginButton.getScene();
-            if (scene != null) {
-                NavigationHelper.navigateTo("Dashboard.fxml", NavigationHelper.getStage(scene));
+            // Clear previous errors
+            errorLabel.setText("");
+            
+            // Validate input
+            if (email.isEmpty() || password.isEmpty()) {
+                errorLabel.setText("Please enter both email and password");
+                return;
             }
-        } else {
-            errorLabel.setText("Invalid email or password. Please try again.");
+            
+            // Attempt login via AuthService
+            User user = authService.login(email, password);
+            
+            if (user != null) {
+                // Store user in session (session caching)
+                sessionManager.setCurrentUser(user);
+                
+                // Log successful login with user details
+                System.out.println("User logged in: " + user.getFullName() + " (Role: " + user.getRole() + ")");
+                
+                // Navigate to Dashboard
+                Scene scene = loginButton.getScene();
+                if (scene != null) {
+                    boolean navigated = NavigationHelper.navigateTo("Dashboard.fxml", NavigationHelper.getStage(scene));
+                    if (!navigated) {
+                        errorLabel.setText("Failed to navigate to dashboard. Please try again.");
+                    }
+                } else {
+                    errorLabel.setText("Navigation error. Please try again.");
+                }
+            } else {
+                errorLabel.setText("Invalid email or password. Please try again.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error during login: " + e.getMessage());
+            e.printStackTrace();
+            errorLabel.setText("An error occurred during login. Please try again.");
         }
     }
     
@@ -97,4 +111,6 @@ public class LoginController implements Initializable {
         // Future: Navigate to signup screen
     }
 }
+
+
 

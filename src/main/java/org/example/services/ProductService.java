@@ -190,4 +190,95 @@ public class ProductService {
         cacheManager.invalidate();
         System.out.println("[CACHE] Product cache invalidated");
     }
+    
+    /**
+     * Creates a new product.
+     * Invalidates cache after creation.
+     *
+     * @param productDTO Product data transfer object
+     * @return true if product was created successfully, false otherwise
+     */
+    public boolean createProduct(ProductDTO productDTO) {
+        if (productDTO == null) {
+            System.err.println("ProductDTO cannot be null");
+            return false;
+        }
+        
+        if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
+            System.err.println("Product name is required");
+            return false;
+        }
+        
+        if (productDTO.getPrice() == null || productDTO.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            System.err.println("Product price must be non-negative");
+            return false;
+        }
+        
+        boolean success = productDAO.createProduct(productDTO);
+        
+        if (success) {
+            invalidateCache();
+            System.out.println("Product created successfully: " + productDTO.getName());
+        } else {
+            System.err.println("Failed to create product: " + productDTO.getName());
+        }
+        
+        return success;
+    }
+    
+    /**
+     * Updates an existing product.
+     * Invalidates cache after update.
+     *
+     * @param productId Product ID
+     * @param productDTO Updated product data
+     * @return true if product was updated successfully, false otherwise
+     */
+    public boolean updateProduct(int productId, ProductDTO productDTO) {
+        if (productDTO == null) {
+            System.err.println("ProductDTO cannot be null");
+            return false;
+        }
+        
+        if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
+            System.err.println("Product name is required");
+            return false;
+        }
+        
+        if (productDTO.getPrice() == null || productDTO.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            System.err.println("Product price must be non-negative");
+            return false;
+        }
+        
+        boolean success = productDAO.updateProduct(productId, productDTO);
+        
+        if (success) {
+            invalidateCache();
+            System.out.println("Product updated successfully: " + productId);
+        } else {
+            System.err.println("Failed to update product: " + productId);
+        }
+        
+        return success;
+    }
+    
+    /**
+     * Deletes a product by ID.
+     * Invalidates cache after deletion.
+     *
+     * @param productId Product ID to delete
+     * @return true if product was deleted successfully, false otherwise
+     */
+    public boolean deleteProduct(int productId) {
+        boolean success = productDAO.deleteProduct(productId);
+        
+        if (success) {
+            invalidateCache();
+            System.out.println("Product deleted successfully: " + productId);
+        } else {
+            System.err.println("Failed to delete product: " + productId);
+        }
+        
+        return success;
+    }
 }
