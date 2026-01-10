@@ -50,19 +50,22 @@ public class InventoryDAO {
 
     /**
      * Updates stock quantity for a product.
+     * Uses UPSERT (Insert or Update) logic to handle missing records.
      *
      * @param productId The product ID
      * @param dto The inventory data transfer object
      * @return true if stock was updated successfully, false otherwise
      */
     public boolean updateStock(int productId, InventoryDTO dto) {
-        String sql = "UPDATE inventory SET quantity = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
+        // Use PostgreSQL UPSERT logic
+        String sql = "INSERT INTO inventory (product_id, quantity, last_updated) VALUES (?, ?, CURRENT_TIMESTAMP) " +
+                     "ON CONFLICT (product_id) DO UPDATE SET quantity = EXCLUDED.quantity, last_updated = CURRENT_TIMESTAMP";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setInt(1, dto.getQuantity());
-            pstmt.setInt(2, productId);
+            pstmt.setInt(1, productId);
+            pstmt.setInt(2, dto.getQuantity());
             
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;

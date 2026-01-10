@@ -17,6 +17,7 @@ import java.util.Map;
  * Follows Single Responsibility Principle by delegating calculations to CartCalculator.
  */
 public class CartService {
+    private static CartService instance;
     private final InventoryService inventoryService;
     private final ProductDAO productDAO;
     private final CartCalculator calculator;
@@ -24,11 +25,18 @@ public class CartService {
     // In-memory cart: productId -> OrderItemDTO
     private final Map<Integer, OrderItemDTO> cartItems;
     
-    public CartService() {
+    private CartService() {
         this.inventoryService = new InventoryService();
         this.productDAO = new ProductDAO();
         this.calculator = new CartCalculator();
         this.cartItems = new HashMap<>();
+    }
+
+    public static synchronized CartService getInstance() {
+        if (instance == null) {
+            instance = new CartService();
+        }
+        return instance;
     }
     
     /**

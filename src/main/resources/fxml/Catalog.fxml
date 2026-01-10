@@ -1,59 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.collections.FXCollections?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.CatalogController">
    <children>
-      <HBox spacing="10" alignment="CENTER_LEFT">
+      <HBox spacing="15" alignment="CENTER_LEFT" styleClass="nav-bar">
          <children>
-            <Label text="Search:" />
-            <TextField fx:id="searchField" promptText="Search products..." prefWidth="300" HBox.hgrow="ALWAYS" />
-            <Label text="Sort by:" />
-            <ComboBox fx:id="sortCombo" prefWidth="150">
-               <items>
-                  <FXCollections fx:factory="observableArrayList">
-                     <String fx:value="Price ↑" />
-                     <String fx:value="Price ↓" />
-                     <String fx:value="Name A-Z" />
-                     <String fx:value="Rating ↓" />
-                  </FXCollections>
-               </items>
-            </ComboBox>
+            <Label text="Smart Store" styleClass="label-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox spacing="10" alignment="CENTER">
+               <children>
+                  <Button fx:id="ordersButton" text="My Orders" styleClass="button-secondary" />
+                  <Button fx:id="cartButton" text="View Cart" styleClass="button-primary" />
+                  <Button fx:id="refreshButton" text="Refresh" styleClass="button-secondary" />
+                  <Button fx:id="logoutButton" text="Logout" styleClass="button-danger" />
+               </children>
+            </HBox>
          </children>
-         <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
       </HBox>
       
       <Separator />
       
-      <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-         <content>
-            <GridPane fx:id="productList" hgap="15" vgap="15">
-               <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-               </padding>
-            </GridPane>
-         </content>
-      </ScrollPane>
-      
-      <HBox spacing="10" alignment="CENTER_RIGHT">
+      <VBox alignment="TOP_CENTER" spacing="20" VBox.vgrow="ALWAYS">
          <children>
-            <Label fx:id="perfLabel" text="" textFill="GRAY" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="viewDetailsButton" text="View Details" />
+            <VBox alignment="CENTER" spacing="15" styleClass="container" maxWidth="700.0">
+               <padding>
+                  <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+               </padding>
+               <children>
+                  <HBox spacing="10" alignment="CENTER">
+                     <children>
+                        <VBox spacing="3" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label text="Search Products" styleClass="label-subtitle" style="-fx-font-size: 14px;" />
+                              <TextField fx:id="searchField" promptText="What are you looking for?" prefHeight="30.0" />
+                           </children>
+                        </VBox>
+                        <VBox spacing="3">
+                           <children>
+                              <Label text="Sort By" styleClass="label-subtitle" style="-fx-font-size: 14px;" />
+                              <ComboBox fx:id="sortCombo" prefWidth="150" prefHeight="30.0" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <StackPane VBox.vgrow="ALWAYS">
+               <children>
+                  <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                     <content>
+                        <GridPane fx:id="productList" hgap="25" vgap="20" alignment="CENTER_LEFT">
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
+                           </padding>
+                        </GridPane>
+                     </content>
+                  </ScrollPane>
+                  <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" />
+               </children>
+            </StackPane>
+            
+            <HBox spacing="15" alignment="CENTER">
+               <children>
+                  <Label fx:id="perfLabel" text="" styleClass="label-info" />
+                  <Region HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
          </children>
-         <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-         </padding>
-      </HBox>
+      </VBox>
    </children>
-   <padding>
-      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-   </padding>
 </VBox>
-

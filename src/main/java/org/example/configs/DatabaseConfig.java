@@ -13,7 +13,7 @@ public class DatabaseConfig {
     // Database connection parameters
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/ecomdb";
     private static final String DB_USER = "postgres";
-    private static final String DB_PASSWORD = "postgres";
+    private static final String DB_PASSWORD = "miniPro25";
     
     // JDBC Driver class name
     private static final String JDBC_DRIVER = "org.postgresql.Driver";

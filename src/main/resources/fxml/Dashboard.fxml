@@ -3,19 +3,14 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="20" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="20" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.DashboardController">
    <children>
-      <HBox alignment="CENTER_LEFT" spacing="10">
+      <HBox alignment="CENTER_LEFT" spacing="10" styleClass="nav-bar">
          <children>
-            <Label fx:id="welcomeLabel" text="Welcome, User!" textAlignment="LEFT">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
+            <Label fx:id="welcomeLabel" text="Welcome, User!" textAlignment="LEFT" styleClass="label-title" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="logoutButton" text="Logout" />
+            <Button fx:id="logoutButton" text="Logout" styleClass="button-danger" />
          </children>
          <padding>
             <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
@@ -26,29 +21,13 @@
       
       <VBox spacing="15" alignment="CENTER" prefWidth="400">
          <children>
-            <Button fx:id="catalogButton" text="Browse Catalog" prefWidth="300" prefHeight="40">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
+            <Button fx:id="catalogButton" text="Browse Catalog" prefWidth="320" prefHeight="50" styleClass="button-primary" />
             
-            <Button fx:id="cartButton" text="View Cart" prefWidth="300" prefHeight="40">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
+            <Button fx:id="cartButton" text="View Cart" prefWidth="320" prefHeight="50" styleClass="button-primary" />
             
-            <Button fx:id="ordersButton" text="My Orders" prefWidth="300" prefHeight="40">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
+            <Button fx:id="ordersButton" text="My Orders" prefWidth="320" prefHeight="50" styleClass="button-primary" />
             
-            <Button fx:id="adminButton" text="Admin Panel" prefWidth="300" prefHeight="40" visible="false">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
+            <Button fx:id="adminButton" text="Admin Panel" prefWidth="320" prefHeight="50" visible="false" styleClass="button-secondary" />
          </children>
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

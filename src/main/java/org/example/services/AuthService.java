@@ -29,27 +29,25 @@ public class AuthService {
      * Validates email format and password strength before creating the user.
      *
      * @param userDTO User data transfer object with plain password
-     * @return true if signup successful, false otherwise
+     * @return SignupResult with success status and specific error message if failed
      */
-    public boolean signup(UserDTO userDTO) {
+    public SignupResult signup(UserDTO userDTO) {
         // Validate email format
         if (!emailValidator.isValid(userDTO.getEmail())) {
-            System.err.println("Invalid email format: " + userDTO.getEmail());
-            return false;
+            return SignupResult.failure("Invalid email format. Please enter a valid email address.");
         }
         
         // Validate password strength
         if (!passwordValidator.isValid(userDTO.getPassword())) {
-            System.err.println("Password does not meet strength requirements. Must be at least " + 
-                             passwordValidator.getMinPasswordLength() + " characters with letters and numbers.");
-            return false;
+            int minLength = passwordValidator.getMinPasswordLength();
+            return SignupResult.failure("Password does not meet requirements. Password must be at least " + 
+                             minLength + " characters long and contain both letters and numbers.");
         }
         
         // Check if email already exists
         User existingUser = userDAO.getUserByEmail(userDTO.getEmail());
         if (existingUser != null) {
-            System.err.println("Email already registered: " + userDTO.getEmail());
-            return false;
+            return SignupResult.failure("An account with this email already exists. Please use a different email or try logging in.");
         }
         
         // Hash password before storing
@@ -64,11 +62,10 @@ public class AuthService {
         boolean success = userDAO.createUser(hashedUserDTO);
         if (success) {
             System.out.println("User signed up successfully: " + userDTO.getEmail());
+            return SignupResult.success();
         } else {
-            System.err.println("Failed to create user: " + userDTO.getEmail());
+            return SignupResult.failure("Failed to create account. Database error occurred. Please try again.");
         }
-        
-        return success;
     }
     
     /**
@@ -76,29 +73,37 @@ public class AuthService {
      *
      * @param email User email
      * @param plainPassword Plain text password
-     * @return User object if login successful, null otherwise
+     * @return AuthResult with success status and specific error message if failed
      */
-    public User login(String email, String plainPassword) {
-        if (email == null || email.isEmpty() || plainPassword == null || plainPassword.isEmpty()) {
-            System.err.println("Email and password are required for login");
-            return null;
+    public AuthResult login(String email, String plainPassword) {
+        // Validate email is provided
+        if (email == null || email.trim().isEmpty()) {
+            return AuthResult.failure("Email is required");
+        }
+        
+        // Validate password is provided
+        if (plainPassword == null || plainPassword.isEmpty()) {
+            return AuthResult.failure("Password is required");
+        }
+        
+        // Validate email format
+        if (!emailValidator.isValid(email.trim())) {
+            return AuthResult.failure("Invalid email format. Please enter a valid email address.");
         }
         
         // Get user from database
-        User user = userDAO.getUserByEmail(email);
+        User user = userDAO.getUserByEmail(email.trim());
         if (user == null) {
-            System.err.println("User not found: " + email);
-            return null;
+            return AuthResult.failure("No account found with this email address.");
         }
         
         // Hash the provided password and compare with stored hash
         String hashedPassword = passwordHasher.hash(plainPassword);
         if (hashedPassword.equals(user.getPasswordHash())) {
             System.out.println("Login successful for user: " + email);
-            return user;
+            return AuthResult.success(user);
         } else {
-            System.err.println("Invalid password for user: " + email);
-            return null;
+            return AuthResult.failure("Incorrect password. Please check your password and try again.");
         }
     }
     

@@ -53,6 +53,15 @@ public class ProductDetailsController implements Initializable {
     @FXML
     private Button addToCartButton;
     
+    @FXML
+    private Button backButton;
+    
+    @FXML
+    private ProgressIndicator loadingIndicator;
+    
+    @FXML
+    private ProgressIndicator reviewsLoadingIndicator;
+    
     private ProductService productService;
     private ReviewService reviewService;
     private CartService cartService;
@@ -64,7 +73,7 @@ public class ProductDetailsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         this.productService = new ProductService();
         this.reviewService = new ReviewService();
-        this.cartService = new CartService();
+        this.cartService = CartService.getInstance();
         this.sessionManager = SessionManager.getInstance();
         this.productDAO = new ProductDAO();
         
@@ -115,6 +124,37 @@ public class ProductDetailsController implements Initializable {
         // Set up event handlers
         addReviewButton.setOnAction(e -> handleAddReview());
         addToCartButton.setOnAction(e -> handleAddToCart());
+        backButton.setOnAction(e -> navigateToCatalog());
+    }
+    
+    /**
+     * Shows or hides the loading indicator.
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+        }
+    }
+    
+    /**
+     * Shows or hides the reviews loading indicator.
+     */
+    private void showReviewsLoading(boolean show) {
+        if (reviewsLoadingIndicator != null) {
+            reviewsLoadingIndicator.setVisible(show);
+            reviewsLoadingIndicator.setManaged(show);
+        }
+    }
+    
+    /**
+     * Navigates back to catalog.
+     */
+    private void navigateToCatalog() {
+        Scene scene = backButton.getScene();
+        if (scene != null) {
+            NavigationHelper.navigateTo("Catalog.fxml", NavigationHelper.getStage(scene));
+        }
     }
     
     /**
@@ -127,21 +167,20 @@ public class ProductDetailsController implements Initializable {
         }
         
         try {
+            showLoading(true);
             productName.setText(product.getName() != null ? product.getName() : "Unknown Product");
-            productPrice.setText(product.getPrice() != null ? "$" + product.getPrice() : "$0.00");
+            productPrice.setText(product.getPrice() != null ? "$" + String.format("%.2f", product.getPrice()) : "$0.00");
             productDesc.setText(product.getDescription() != null ? product.getDescription() : "No description available");
             
-            // Load image if URL is provided
-            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            // Load actual image if available
+            if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
                 try {
-                    Image image = new Image(product.getImageUrl());
+                    Image image = new Image(product.getImageUrl(), true);
                     productImage.setImage(image);
                 } catch (Exception e) {
                     System.err.println("Error loading product image: " + e.getMessage());
-                    productImage.setImage(null);
+                    // Keep existing image (likely a placeholder set in FXML or left blank)
                 }
-            } else {
-                productImage.setImage(null);
             }
             
             // Load average rating (uses cached or computed values from ReviewService)
@@ -151,9 +190,11 @@ public class ProductDetailsController implements Initializable {
             } else {
                 avgRatingLabel.setText("Rating: N/A");
             }
+            showLoading(false);
         } catch (Exception e) {
             System.err.println("Error loading product details: " + e.getMessage());
             e.printStackTrace();
+            showLoading(false);
         }
     }
     
@@ -162,9 +203,11 @@ public class ProductDetailsController implements Initializable {
      */
     private void loadReviews() {
         try {
+            showReviewsLoading(true);
             if (currentProductId <= 0) {
                 reviewsList.getItems().clear();
                 reviewsList.getItems().add("Invalid product ID");
+                showReviewsLoading(false);
                 return;
             }
             
@@ -187,11 +230,13 @@ public class ProductDetailsController implements Initializable {
             if (reviews.isEmpty()) {
                 reviewsList.getItems().add("No reviews yet. Be the first to review!");
             }
+            showReviewsLoading(false);
         } catch (Exception e) {
             System.err.println("Error loading reviews: " + e.getMessage());
             e.printStackTrace();
             reviewsList.getItems().clear();
             reviewsList.getItems().add("Error loading reviews. Please try again.");
+            showReviewsLoading(false);
         }
     }
     
@@ -265,16 +310,6 @@ public class ProductDetailsController implements Initializable {
             alert.setHeaderText(null);
             alert.setContentText("An error occurred while adding product to cart. Please try again.");
             alert.showAndWait();
-        }
-    }
-    
-    /**
-     * Navigates to Catalog screen.
-     */
-    private void navigateToCatalog() {
-        Scene scene = addToCartButton.getScene();
-        if (scene != null) {
-            NavigationHelper.navigateTo("Catalog.fxml", NavigationHelper.getStage(scene));
         }
     }
     

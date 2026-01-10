@@ -4,60 +4,74 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.ProductDetailsController">
    <content>
       <VBox spacing="20">
          <children>
-            <HBox spacing="20" alignment="TOP_LEFT">
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="nav-bar">
                <children>
-                  <ImageView fx:id="productImage" fitHeight="300.0" fitWidth="300.0" preserveRatio="true" />
-                  
-                  <VBox spacing="15" alignment="TOP_LEFT" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label fx:id="productName" text="Product Name" wrapText="true">
-                           <font>
-                              <Font name="System Bold" size="24.0" />
-                           </font>
-                        </Label>
-                        
-                        <Label fx:id="productPrice" text="$0.00" textFill="GREEN">
-                           <font>
-                              <Font name="System Bold" size="20.0" />
-                           </font>
-                        </Label>
-                        
-                        <Label text="Description:" />
-                        <Label fx:id="productDesc" text="Product description..." wrapText="true" />
-                        
-                        <Label fx:id="avgRatingLabel" text="Rating: N/A" />
-                        
-                        <HBox spacing="10">
-                           <children>
-                              <Button fx:id="addToCartButton" text="Add to Cart" prefWidth="150" />
-                              <Button fx:id="addReviewButton" text="Add Review" prefWidth="150" />
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
+                  <Button fx:id="backButton" text="← Back" styleClass="button-secondary" />
+                  <Region HBox.hgrow="ALWAYS" />
                </children>
                <padding>
-                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                  <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
                </padding>
             </HBox>
             
             <Separator />
             
+            <StackPane>
+               <children>
+                  <HBox spacing="20" alignment="TOP_LEFT">
+                     <children>
+                        <StackPane alignment="CENTER" styleClass="image-placeholder" prefWidth="300" prefHeight="300">
+                           <children>
+                              <Label text="📦" style="-fx-font-size: 80px;" />
+                              <ImageView fx:id="productImage" fitHeight="280.0" fitWidth="280.0" preserveRatio="true" />
+                           </children>
+                        </StackPane>
+                        
+                        <VBox spacing="15" alignment="TOP_LEFT" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="productName" text="Product Name" wrapText="true" styleClass="label-title" />
+                              
+                              <Label fx:id="productPrice" text="0.00" styleClass="label-success" />
+                              
+                              <Label text="Description:" styleClass="label-subtitle" />
+                              <Label fx:id="productDesc" text="Product description..." wrapText="true" />
+                              
+                              <Label fx:id="avgRatingLabel" text="Rating: N/A" />
+                              
+                              <HBox spacing="10">
+                                 <children>
+                                    <Button fx:id="addToCartButton" text="Add to Cart" prefWidth="150" styleClass="button-success" />
+                                    <Button fx:id="addReviewButton" text="Add Review" prefWidth="150" styleClass="button-primary" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </padding>
+                  </HBox>
+                  <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" />
+               </children>
+            </StackPane>
+            
+            <Separator />
+            
             <VBox spacing="10">
                <children>
-                  <Label text="Reviews:">
-                     <font>
-                        <Font name="System Bold" size="16.0" />
-                     </font>
-                  </Label>
+                  <Label text="Reviews:" styleClass="label-subtitle" />
                   
-                  <ListView fx:id="reviewsList" prefHeight="300" VBox.vgrow="ALWAYS" />
+                  <StackPane>
+                     <children>
+                        <ListView fx:id="reviewsList" prefHeight="300" VBox.vgrow="ALWAYS" />
+                        <ProgressIndicator fx:id="reviewsLoadingIndicator" visible="false" managed="false" />
+                     </children>
+                  </StackPane>
                </children>
                <padding>
                   <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />

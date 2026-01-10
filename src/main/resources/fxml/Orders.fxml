@@ -3,45 +3,46 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.OrdersController">
    <children>
-      <HBox alignment="CENTER_LEFT">
+      <HBox spacing="15" alignment="CENTER_LEFT" styleClass="nav-bar">
          <children>
-            <Label text="Order History" textAlignment="LEFT">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
+            <Button fx:id="backButton" text="← Back to Shop" styleClass="button-secondary" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="refreshOrdersBtn" text="Refresh" />
+            <Label text="Order History" styleClass="label-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshOrdersBtn" text="Refresh" styleClass="button-primary" />
          </children>
-         <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
       </HBox>
       
       <Separator />
       
-      <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
-         <columns>
-            <TableColumn text="Order ID" prefWidth="80" />
-            <TableColumn text="Date" prefWidth="120" />
-            <TableColumn text="Items" prefWidth="100" />
-            <TableColumn text="Total" prefWidth="100" />
-            <TableColumn text="Status" prefWidth="120" />
-         </columns>
-      </TableView>
-      
-      <Label fx:id="ordersPerfLabel" text="" textFill="GRAY" wrapText="true" />
+      <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+         </padding>
+         <children>
+            <VBox alignment="CENTER" spacing="24" styleClass="container" maxWidth="1100.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <StackPane VBox.vgrow="ALWAYS" minHeight="450.0">
+                     <children>
+                        <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="orderIdCol" text="Order ID" prefWidth="120" />
+                              <TableColumn fx:id="orderDateCol" text="Date" prefWidth="200" />
+                              <TableColumn text="Items" prefWidth="150" />
+                              <TableColumn fx:id="orderTotalCol" text="Total Amount" prefWidth="150" />
+                              <TableColumn fx:id="orderStatusCol" text="Status" prefWidth="180" />
+                           </columns>
+                        </TableView>
+                        <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" />
+                     </children>
+                  </StackPane>
+                  <Label fx:id="ordersPerfLabel" text="" wrapText="true" styleClass="label-info" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
    </children>
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
 </VBox>
-
-
-
-
-

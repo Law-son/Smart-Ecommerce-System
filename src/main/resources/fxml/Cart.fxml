@@ -3,57 +3,54 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.CartController">
    <children>
-      <Label text="Shopping Cart" textAlignment="CENTER">
-         <font>
-            <Font name="System Bold" size="20.0" />
-         </font>
-      </Label>
+      <HBox spacing="15" alignment="CENTER_LEFT" styleClass="nav-bar">
+         <children>
+            <Button fx:id="backButton" text="← Back to Shop" styleClass="button-secondary" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label text="Your Shopping Cart" styleClass="label-title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="refreshButton" text="Refresh" styleClass="button-secondary" />
+         </children>
+      </HBox>
       
       <Separator />
       
-      <Label fx:id="cartErrorLabel" text="" textFill="RED" wrapText="true" />
-      
-      <ListView fx:id="cartItemsList" VBox.vgrow="ALWAYS" />
-      
-      <HBox spacing="10" alignment="CENTER_RIGHT">
-         <children>
-            <Label text="Total:" />
-            <Label fx:id="cartTotalLabel" text="$0.00" textFill="GREEN">
-               <font>
-                  <Font name="System Bold" size="18.0" />
-               </font>
-            </Label>
-         </children>
+      <VBox alignment="CENTER" VBox.vgrow="ALWAYS">
          <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
          </padding>
-      </HBox>
-      
-      <HBox spacing="10" alignment="CENTER">
          <children>
-            <Button fx:id="updateItemButton" text="Update Item" prefWidth="150" />
-            <Button fx:id="removeItemButton" text="Remove Item" prefWidth="150" />
-            <Button fx:id="checkoutButton" text="Checkout" prefWidth="150">
-               <font>
-                  <Font name="System Bold" size="14.0" />
-               </font>
-            </Button>
+            <VBox alignment="CENTER" spacing="24" styleClass="container" maxWidth="1000.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label fx:id="cartErrorLabel" text="" wrapText="true" styleClass="label-error" visible="false" managed="false" />
+                  
+                  <StackPane VBox.vgrow="ALWAYS" minHeight="400.0">
+                     <children>
+                        <ListView fx:id="cartItemsList" />
+                        <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" />
+                     </children>
+                  </StackPane>
+                  
+                  <HBox spacing="20" alignment="CENTER_RIGHT">
+                     <children>
+                        <Label text="Total Amount:" styleClass="label-subtitle" />
+                        <Label fx:id="cartTotalLabel" text="0.00" styleClass="label-success" />
+                     </children>
+                  </HBox>
+                  
+                  <HBox spacing="15" alignment="CENTER">
+                     <children>
+                        <Button fx:id="updateItemButton" text="Update Qty" prefWidth="160" styleClass="button-secondary" />
+                        <Button fx:id="removeItemButton" text="Remove" prefWidth="160" styleClass="button-danger" />
+                        <Button fx:id="checkoutButton" text="Complete Checkout" prefWidth="200" styleClass="button-primary" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
          </children>
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="10.0" />
-         </padding>
-      </HBox>
+      </VBox>
    </children>
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
 </VBox>
-
-
-
-
-

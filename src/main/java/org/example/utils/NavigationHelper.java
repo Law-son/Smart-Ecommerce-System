@@ -28,8 +28,21 @@ public class NavigationHelper {
             FXMLLoader loader = new FXMLLoader(NavigationHelper.class.getResource(FXML_PATH + fxmlFile));
             Parent root = loader.load();
             
-            Scene scene = new Scene(root);
-            currentStage.setScene(scene);
+            // Get current scene or create new one if it doesn't exist
+            Scene scene = currentStage.getScene();
+            if (scene == null) {
+                scene = new Scene(root);
+                currentStage.setScene(scene);
+            } else {
+                scene.setRoot(root);
+            }
+            
+            // Apply modern CSS stylesheet
+            String css = NavigationHelper.class.getResource("/styles/modern.css").toExternalForm();
+            if (!scene.getStylesheets().contains(css)) {
+                scene.getStylesheets().add(css);
+            }
+            
             currentStage.setTitle(getTitleFromFxml(fxmlFile));
             currentStage.setResizable(true); // Ensure all screens are resizable
             currentStage.show();
@@ -54,11 +67,16 @@ public class NavigationHelper {
             FXMLLoader loader = new FXMLLoader(NavigationHelper.class.getResource(FXML_PATH + fxmlFile));
             Parent root = loader.load();
             
+            Scene scene = new Scene(root);
+            // Apply modern CSS stylesheet
+            String css = NavigationHelper.class.getResource("/styles/modern.css").toExternalForm();
+            scene.getStylesheets().add(css);
+            
             Stage dialogStage = new Stage();
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(ownerStage);
             dialogStage.initStyle(StageStyle.UTILITY);
-            dialogStage.setScene(new Scene(root));
+            dialogStage.setScene(scene);
             dialogStage.setTitle(getTitleFromFxml(fxmlFile));
             dialogStage.setResizable(true); // Enable resizable UI for dialogs
             dialogStage.show();

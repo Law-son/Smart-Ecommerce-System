@@ -4,44 +4,29 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.ReviewDialogController" styleClass="container">
    <children>
-      <Label text="Add Review" textAlignment="CENTER">
-         <font>
-            <Font name="System Bold" size="16.0" />
-         </font>
-      </Label>
+      <Label text="Add Review" textAlignment="CENTER" styleClass="label-subtitle" />
       
       <Separator />
       
       <VBox spacing="10">
          <children>
             <Label text="Rating:" />
-            <ComboBox fx:id="ratingCombo" prefWidth="200">
-               <items>
-                  <FXCollections fx:factory="observableArrayList">
-                     <Integer fx:value="1" />
-                     <Integer fx:value="2" />
-                     <Integer fx:value="3" />
-                     <Integer fx:value="4" />
-                     <Integer fx:value="5" />
-                  </FXCollections>
-               </items>
-            </ComboBox>
+            <ComboBox fx:id="ratingCombo" prefWidth="200" />
             
             <Label text="Comment:" />
             <TextArea fx:id="reviewComment" promptText="Enter your review comment..." prefRowCount="5" wrapText="true" />
             
-            <Label fx:id="reviewErrorLabel" text="" textFill="RED" wrapText="true" />
+            <Label fx:id="reviewErrorLabel" text="" wrapText="true" styleClass="label-error" visible="false" managed="false" />
          </children>
       </VBox>
       
       <HBox spacing="10" alignment="CENTER_RIGHT">
          <children>
-            <Button fx:id="cancelReviewButton" text="Cancel" prefWidth="100" />
-            <Button fx:id="submitReviewButton" text="Submit" prefWidth="100" />
+            <Button fx:id="cancelReviewButton" text="Cancel" prefWidth="100" styleClass="button-secondary" />
+            <Button fx:id="submitReviewButton" text="Submit" prefWidth="100" styleClass="button-success" />
          </children>
       </HBox>
    </children>

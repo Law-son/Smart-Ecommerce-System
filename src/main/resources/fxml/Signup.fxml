@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="30" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.SignupController">
+   <children>
+      <Label text="Smart E-Commerce System" textAlignment="CENTER" styleClass="label-title" />
+      <Label text="Create Account" textAlignment="CENTER" styleClass="label-subtitle" />
+      
+      <VBox alignment="CENTER" spacing="20" styleClass="container" maxWidth="500.0">
+         <children>
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="450">
+               <children>
+                  <Label text="Full Name:" />
+                  <TextField fx:id="fullNameField" promptText="Enter your full name" prefWidth="450" />
+               </children>
+            </VBox>
+            
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="450">
+               <children>
+                  <Label text="Email:" />
+                  <TextField fx:id="emailField" promptText="Enter your email" prefWidth="450" />
+               </children>
+            </VBox>
+            
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="450">
+               <children>
+                  <Label text="Password:" />
+                  <PasswordField fx:id="passwordField" promptText="Enter your password" prefWidth="450" />
+               </children>
+            </VBox>
+            
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="450">
+               <children>
+                  <Label text="Confirm Password:" />
+                  <PasswordField fx:id="confirmPasswordField" promptText="Confirm your password" prefWidth="450" />
+               </children>
+            </VBox>
+            
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="450">
+               <children>
+                  <Label text="Role:" />
+                  <ComboBox fx:id="roleCombo" prefWidth="450" />
+               </children>
+            </VBox>
+            
+            <Label fx:id="errorLabel" text="" wrapText="true" prefWidth="450" styleClass="label-error" visible="false" managed="false" />
+            
+            <HBox spacing="10" alignment="CENTER">
+               <children>
+                  <Button fx:id="signupButton" text="Sign Up" prefWidth="215" styleClass="button-success" />
+                  <Button fx:id="cancelButton" text="Cancel" prefWidth="215" styleClass="button-secondary" />
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+   </padding>
+</VBox>
+

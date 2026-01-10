@@ -3,42 +3,44 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox alignment="CENTER" spacing="30" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.LoginController">
    <children>
-      <Label text="Smart E-Commerce System" textAlignment="CENTER">
-         <font>
-            <Font name="System Bold" size="24.0" />
-         </font>
-      </Label>
-      <Label text="Login" textAlignment="CENTER">
-         <font>
-            <Font size="18.0" />
-         </font>
-      </Label>
+      <Label text="Smart E-Commerce System" textAlignment="CENTER" styleClass="label-title" />
+      <Label text="Login" textAlignment="CENTER" styleClass="label-subtitle" />
       
-      <VBox spacing="10" alignment="CENTER" prefWidth="300">
+      <VBox alignment="CENTER" spacing="20" styleClass="container" maxWidth="450.0">
          <children>
-            <Label text="Email:" />
-            <TextField fx:id="emailField" promptText="Enter your email" prefWidth="300" />
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="400">
+               <children>
+                  <Label text="Email:" />
+                  <TextField fx:id="emailField" promptText="Enter your email" prefWidth="400" />
+               </children>
+            </VBox>
             
-            <Label text="Password:" />
-            <PasswordField fx:id="passwordField" promptText="Enter your password" prefWidth="300" />
+            <VBox spacing="10" alignment="CENTER_LEFT" prefWidth="400">
+               <children>
+                  <Label text="Password:" />
+                  <PasswordField fx:id="passwordField" promptText="Enter your password" prefWidth="400" />
+               </children>
+            </VBox>
             
-            <Label fx:id="errorLabel" textFill="RED" text="" wrapText="true" prefWidth="300" />
+            <Label fx:id="errorLabel" text="" wrapText="true" prefWidth="400" styleClass="label-error" visible="false" managed="false" />
             
             <HBox spacing="10" alignment="CENTER">
                <children>
-                  <Button fx:id="loginButton" text="Login" prefWidth="140" />
-                  <Button fx:id="signupButton" text="Sign Up" prefWidth="140" />
+                  <Button fx:id="loginButton" text="Login" prefWidth="190" styleClass="button-primary" />
+                  <Button fx:id="signupButton" text="Sign Up" prefWidth="190" styleClass="button-secondary" />
                </children>
             </HBox>
          </children>
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
       </VBox>
    </children>
    <padding>
-      <Insets bottom="50.0" left="50.0" right="50.0" top="50.0" />
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
    </padding>
 </VBox>
 

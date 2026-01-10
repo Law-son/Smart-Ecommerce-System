@@ -4,14 +4,13 @@ import org.example.dao.ProductDAO;
 import org.example.dto.ProductDTO;
 import org.example.models.Product;
 import org.example.utils.PerformanceMonitor;
+import org.example.utils.SortingUtils;
 import org.example.utils.cache.ProductCacheManager;
 import org.example.utils.mappers.ProductMapper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Product service handling catalog operations, search, and sorting.
@@ -34,6 +33,7 @@ public class ProductService {
     
     /**
      * Fetches all products with caching and performance timing.
+     * Loads cache only after successful DB fetch.
      *
      * @return List of ProductDTO objects
      */
@@ -42,15 +42,18 @@ public class ProductService {
             // Check cache first
             List<ProductDTO> cachedProducts = cacheManager.getAll();
             if (cachedProducts != null) {
-                System.out.println("[PERF] Fetch all products (from cache)");
                 return new ArrayList<>(cachedProducts);
             }
             
-            // Fetch from database
+            // Cache miss - fetch from database
             List<Product> products = productDAO.getAllProducts();
+            if (products == null || products.isEmpty()) {
+                return new ArrayList<>();
+            }
+            
             List<ProductDTO> productDTOs = mapper.toDTOList(products);
             
-            // Update caches
+            // Load cache only after successful DB fetch
             for (Product product : products) {
                 ProductDTO dto = mapper.toDTO(product);
                 cacheManager.put(product.getProductId(), product, dto);
@@ -63,53 +66,78 @@ public class ProductService {
     
     /**
      * Searches products by name with cache-first strategy.
+     * Manual search implementation without streams.
      *
-     * @param keyword Search keyword
+     * @param keyword Search keyword (case-insensitive, trimmed)
      * @return List of ProductDTO objects matching the keyword
      */
     public List<ProductDTO> searchProductsByName(String keyword) {
-        return performanceMonitor.monitor("Search products", () -> {
-            if (keyword == null || keyword.trim().isEmpty()) {
+        return performanceMonitor.monitor("Search fallback query", () -> {
+            // Trim and normalize keyword (case-insensitive)
+            String searchKeyword = (keyword != null ? keyword.trim() : "").toLowerCase();
+            
+            if (searchKeyword.isEmpty()) {
                 return getAllProducts();
             }
             
-            String searchKeyword = keyword.trim().toLowerCase();
-            
-            // First, try to search in cache
+            // Cache-first search: check cache first
             List<ProductDTO> cachedResults = cacheManager.getAll();
             if (cachedResults != null) {
-                List<ProductDTO> filtered = cachedResults.stream()
-                    .filter(p -> p.getName().toLowerCase().contains(searchKeyword))
-                    .collect(Collectors.toList());
+                // Manual search in cache (no streams)
+                List<ProductDTO> filtered = new ArrayList<>();
+                for (ProductDTO product : cachedResults) {
+                    if (product != null && product.getName() != null) {
+                        String productName = product.getName().toLowerCase();
+                        if (productName.contains(searchKeyword)) {
+                            filtered.add(product);
+                        }
+                    }
+                }
+                
                 if (!filtered.isEmpty()) {
-                    System.out.println("[PERF] Search products (from cache)");
+                    System.out.println("[CACHE] Search cache HIT - found " + filtered.size() + " products");
                     return filtered;
+                } else {
+                    System.out.println("[CACHE] Search cache HIT but no matches found");
+                }
+            } else {
+                System.out.println("[CACHE] Search cache MISS - falling back to database");
+            }
+            
+            // Cache miss or no matches - fallback to database
+            List<Product> products = productDAO.searchProductsByName(keyword);
+            List<ProductDTO> result = mapper.toDTOList(products);
+            
+            // Update cache after successful DB fetch
+            if (products != null) {
+                for (Product product : products) {
+                    ProductDTO dto = mapper.toDTO(product);
+                    cacheManager.put(product.getProductId(), product, dto);
                 }
             }
             
-            // Cache miss - fallback to database
-            List<Product> products = productDAO.searchProductsByName(keyword);
-            return mapper.toDTOList(products);
+            return result;
         });
     }
     
     /**
      * Sorts products by price (ascending or descending).
+     * Uses manual Quick Sort implementation.
      *
      * @param ascending true for ascending, false for descending
      * @return Sorted list of ProductDTO objects
      */
     public List<ProductDTO> sortProductsByPrice(boolean ascending) {
         String direction = ascending ? "ascending" : "descending";
-        return performanceMonitor.monitor("Sort products by price (" + direction + ")", () -> {
-            List<ProductDTO> products = getAllProducts();
+        return performanceMonitor.monitor("Sorting execution time", () -> {
+            List<ProductDTO> products = new ArrayList<>(getAllProducts());
             
-            products.sort((p1, p2) -> {
-                BigDecimal price1 = p1.getPrice();
-                BigDecimal price2 = p2.getPrice();
-                int comparison = price1.compareTo(price2);
-                return ascending ? comparison : -comparison;
-            });
+            if (products.size() <= 1) {
+                return products;
+            }
+            
+            // Manual Quick Sort by price
+            SortingUtils.quickSortByPrice(products, ascending);
             
             return products;
         });
@@ -117,44 +145,55 @@ public class ProductService {
     
     /**
      * Sorts products by name (A to Z).
+     * Uses manual Merge Sort implementation.
      *
      * @return Sorted list of ProductDTO objects
      */
     public List<ProductDTO> sortProductsByName() {
-        return performanceMonitor.monitor("Sort products by name", () -> {
-            List<ProductDTO> products = getAllProducts();
-            products.sort(Comparator.comparing(ProductDTO::getName, String.CASE_INSENSITIVE_ORDER));
+        return performanceMonitor.monitor("Sorting execution time", () -> {
+            List<ProductDTO> products = new ArrayList<>(getAllProducts());
+            
+            if (products.size() <= 1) {
+                return products;
+            }
+            
+            // Manual Merge Sort by name (A-Z)
+            SortingUtils.mergeSortByName(products);
+            
             return products;
         });
     }
     
     /**
      * Sorts products by average rating (highest to lowest).
+     * Uses manual Quick Sort implementation.
      *
      * @return Sorted list of ProductDTO objects
      */
     public List<ProductDTO> sortProductsByRating() {
-        return performanceMonitor.monitor("Sort products by rating", () -> {
-            // Get products with their IDs for rating lookup
-            List<Product> products = productDAO.getAllProducts();
-            List<ProductDTO> productDTOs = mapper.toDTOList(products);
+        return performanceMonitor.monitor("Sorting execution time", () -> {
+            List<ProductDTO> products = new ArrayList<>(getAllProducts());
             
-            // Update cache
-            for (Product product : products) {
-                ProductDTO dto = mapper.toDTO(product);
-                cacheManager.put(product.getProductId(), product, dto);
+            if (products.size() <= 1) {
+                return products;
             }
             
-            // Get ratings for all products and sort
-            productDTOs.sort((p1, p2) -> {
-                int id1 = cacheManager.getProductIdFromName(p1.getName());
-                int id2 = cacheManager.getProductIdFromName(p2.getName());
-                double rating1 = reviewService.getAverageRating(id1);
-                double rating2 = reviewService.getAverageRating(id2);
-                return Double.compare(rating2, rating1); // Descending order
-            });
+            // Get ratings for all products
+            double[] ratings = new double[products.size()];
+            for (int i = 0; i < products.size(); i++) {
+                ProductDTO product = products.get(i);
+                int productId = cacheManager.getProductIdFromName(product.getName());
+                if (productId > 0) {
+                    ratings[i] = reviewService.getAverageRating(productId);
+                } else {
+                    ratings[i] = 0.0;
+                }
+            }
             
-            return productDTOs;
+            // Manual Quick Sort by rating (descending)
+            SortingUtils.quickSortByRating(products, ratings);
+            
+            return products;
         });
     }
     
