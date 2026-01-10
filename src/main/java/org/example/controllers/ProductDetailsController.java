@@ -252,7 +252,7 @@ public class ProductDetailsController implements Initializable {
                 Stage dialogStage = NavigationHelper.openDialog("ReviewDialog.fxml", NavigationHelper.getStage(scene));
                 if (dialogStage != null) {
                     // Reload reviews after dialog closes and refresh average rating
-                    dialogStage.setOnCloseRequest(e -> {
+                    dialogStage.setOnHiding(e -> {
                         loadReviews();
                         // Refresh average rating
                         if (currentProductId > 0) {

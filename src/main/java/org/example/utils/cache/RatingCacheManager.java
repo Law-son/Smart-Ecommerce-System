@@ -9,11 +9,19 @@ import java.util.Map;
  */
 public class RatingCacheManager {
     
+    private static RatingCacheManager instance;
     // Cache for average ratings: productId -> averageRating
     private final Map<Integer, Double> ratingCache;
     
-    public RatingCacheManager() {
+    private RatingCacheManager() {
         this.ratingCache = new HashMap<>();
+    }
+
+    public static synchronized RatingCacheManager getInstance() {
+        if (instance == null) {
+            instance = new RatingCacheManager();
+        }
+        return instance;
     }
     
     /**

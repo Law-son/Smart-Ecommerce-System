@@ -48,6 +48,9 @@ public class OrdersController implements Initializable {
     @FXML
     private ProgressIndicator loadingIndicator;
     
+    @FXML
+    private Button markReceivedBtn;
+    
     private OrderService orderService;
     private SessionManager sessionManager;
     
@@ -71,9 +74,36 @@ public class OrdersController implements Initializable {
         // Set up event handlers
         refreshOrdersBtn.setOnAction(e -> loadOrders());
         backButton.setOnAction(e -> navigateToCatalog());
+        markReceivedBtn.setOnAction(e -> handleMarkReceived());
         
         // Load orders
         loadOrders();
+    }
+    
+    private void handleMarkReceived() {
+        Order selected = ordersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            ordersPerfLabel.setText("Please select an order to mark as received");
+            return;
+        }
+        
+        if ("RECEIVED".equals(selected.getStatus())) {
+            ordersPerfLabel.setText("Order is already marked as received");
+            return;
+        }
+        
+        try {
+            boolean success = orderService.updateOrderStatus(selected.getOrderId(), "RECEIVED");
+            if (success) {
+                ordersPerfLabel.setText("Order #" + selected.getOrderId() + " marked as received");
+                loadOrders();
+            } else {
+                ordersPerfLabel.setText("Failed to update order status");
+            }
+        } catch (Exception e) {
+            System.err.println("Error marking order as received: " + e.getMessage());
+            ordersPerfLabel.setText("An error occurred. Please try again.");
+        }
     }
     
     /**
@@ -131,7 +161,7 @@ public class OrdersController implements Initializable {
             ordersTable.getItems().addAll(orders);
             
             // Performance timing is logged by OrderService via PerformanceMonitor
-            ordersPerfLabel.setText("Loaded " + orders.size() + " orders (check console for performance timing)");
+            ordersPerfLabel.setText("Loaded " + orders.size() + " orders");
             showLoading(false);
         } catch (Exception e) {
             System.err.println("Error loading orders: " + e.getMessage());

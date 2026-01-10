@@ -11,7 +11,6 @@
             <Label text="Admin Control Panel" styleClass="label-title" />
             <Region HBox.hgrow="ALWAYS" />
             <Button fx:id="refreshDataBtn" text="Refresh Data" styleClass="button-primary" />
-            <Button fx:id="testDBButton" text="Check Database" styleClass="button-secondary" />
             <Button fx:id="logoutButton" text="Logout" styleClass="button-danger" />
          </children>
       </HBox>

@@ -20,7 +20,7 @@ public class ReviewService {
     public ReviewService() {
         this.reviewDAO = new ReviewDAO();
         this.validator = new ReviewValidator();
-        this.cacheManager = new RatingCacheManager();
+        this.cacheManager = RatingCacheManager.getInstance();
     }
     
     /**

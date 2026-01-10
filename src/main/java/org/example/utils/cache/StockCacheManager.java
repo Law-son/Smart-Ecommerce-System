@@ -9,11 +9,19 @@ import java.util.Map;
  */
 public class StockCacheManager {
     
+    private static StockCacheManager instance;
     // Cache for stock quantities: productId -> quantity
     private final Map<Integer, Integer> stockCache;
     
-    public StockCacheManager() {
+    private StockCacheManager() {
         this.stockCache = new HashMap<>();
+    }
+
+    public static synchronized StockCacheManager getInstance() {
+        if (instance == null) {
+            instance = new StockCacheManager();
+        }
+        return instance;
     }
     
     /**

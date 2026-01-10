@@ -108,10 +108,6 @@ public class AdminController implements Initializable {
     @FXML
     private Label adminPerfLabel;
     
-    // Test DB button
-    @FXML
-    private Button testDBButton;
-
     @FXML
     private Button logoutButton;
     
@@ -298,7 +294,6 @@ public class AdminController implements Initializable {
         updateOrderStatusBtn.setOnAction(e -> handleUpdateOrderStatus());
         updateStockBtn.setOnAction(e -> handleUpdateStock());
         
-        testDBButton.setOnAction(e -> handleTestDB());
         logoutButton.setOnAction(e -> handleLogout());
         refreshDataBtn.setOnAction(e -> loadAllData());
     }
@@ -323,15 +318,12 @@ public class AdminController implements Initializable {
      * Loads all data for admin panel.
      */
     private void loadAllData() {
-        long startTime = System.currentTimeMillis();
-        
         loadProducts();
         loadCategories();
         loadOrders();
         loadInventory();
         
-        long endTime = System.currentTimeMillis();
-        adminPerfLabel.setText("Admin panel loaded in " + (endTime - startTime) + " ms");
+        adminPerfLabel.setText("Admin panel data refreshed");
     }
     
     /**
@@ -790,7 +782,7 @@ public class AdminController implements Initializable {
         String customerInfo = user != null ? user.getEmail() : "User #" + selected.getUserId();
         
         ChoiceDialog<String> dialog = new ChoiceDialog<>(selected.getStatus());
-        dialog.getItems().addAll("PENDING", "PAID", "SHIPPED", "CANCELLED");
+        dialog.getItems().addAll("PENDING", "PAID", "SHIPPED", "DELIVERED", "RECEIVED", "CANCELLED");
         dialog.setTitle("Update Order Status");
         dialog.setHeaderText("Update Order #" + selected.getOrderId() + " (Customer: " + customerInfo + ")");
         dialog.setContentText("Select new status:");
@@ -841,24 +833,10 @@ public class AdminController implements Initializable {
     }
     
     /**
-     * Handles test DB button click.
-     */
-    private void handleTestDB() {
-        org.example.configs.DatabaseConfig dbConfig = new org.example.configs.DatabaseConfig();
-        boolean connected = org.example.configs.DatabaseConfig.testConnection();
-        
-        if (connected) {
-            adminPerfLabel.setText("Database connection: SUCCESS");
-        } else {
-            adminPerfLabel.setText("Database connection: FAILED");
-        }
-    }
-    
-    /**
      * Navigates to Login screen.
      */
     private void navigateToLogin() {
-        Scene scene = testDBButton.getScene();
+        Scene scene = logoutButton.getScene();
         if (scene != null) {
             NavigationHelper.navigateTo("Login.fxml", NavigationHelper.getStage(scene));
         }
