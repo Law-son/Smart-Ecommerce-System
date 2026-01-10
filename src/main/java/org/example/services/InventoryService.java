@@ -18,7 +18,7 @@ public class InventoryService {
     public InventoryService() {
         this.inventoryDAO = new InventoryDAO();
         this.performanceMonitor = new PerformanceMonitor();
-        this.stockCache = new StockCacheManager();
+        this.stockCache = StockCacheManager.getInstance();
     }
     
     /**

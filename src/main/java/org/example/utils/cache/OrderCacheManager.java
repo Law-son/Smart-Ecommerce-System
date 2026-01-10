@@ -13,15 +13,23 @@ import java.util.Map;
  */
 public class OrderCacheManager {
     
+    private static OrderCacheManager instance;
     // Cache for recent orders: userId -> List<OrderDTO>
     private final Map<Integer, List<OrderDTO>> userOrderCache;
     
     // Cache for order lookup: orderId -> OrderDTO
     private final Map<Integer, OrderDTO> orderCache;
     
-    public OrderCacheManager() {
+    private OrderCacheManager() {
         this.userOrderCache = new HashMap<>();
         this.orderCache = new HashMap<>();
+    }
+
+    public static synchronized OrderCacheManager getInstance() {
+        if (instance == null) {
+            instance = new OrderCacheManager();
+        }
+        return instance;
     }
     
     /**

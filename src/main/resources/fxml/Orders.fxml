@@ -39,6 +39,11 @@
                         <ProgressIndicator fx:id="loadingIndicator" visible="false" managed="false" />
                      </children>
                   </StackPane>
+                  <HBox spacing="10" alignment="CENTER">
+                     <children>
+                        <Button fx:id="markReceivedBtn" text="Mark as Received" styleClass="button-success" />
+                     </children>
+                  </HBox>
                   <Label fx:id="ordersPerfLabel" text="" wrapText="true" styleClass="label-info" />
                </children>
             </VBox>

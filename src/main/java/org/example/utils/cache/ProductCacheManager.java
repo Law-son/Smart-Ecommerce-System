@@ -14,17 +14,25 @@ import java.util.Map;
  */
 public class ProductCacheManager {
     
+    private static ProductCacheManager instance;
     private final Map<Integer, ProductDTO> productCache;
     private final Map<Integer, Product> productModelCache;
     private List<ProductDTO> productListCache;
     private long cacheTimestamp;
     private static final long CACHE_TTL = 300000; // 5 minutes in milliseconds
     
-    public ProductCacheManager() {
+    private ProductCacheManager() {
         this.productCache = new HashMap<>();
         this.productModelCache = new HashMap<>();
         this.productListCache = new ArrayList<>();
         this.cacheTimestamp = 0;
+    }
+
+    public static synchronized ProductCacheManager getInstance() {
+        if (instance == null) {
+            instance = new ProductCacheManager();
+        }
+        return instance;
     }
     
     /**

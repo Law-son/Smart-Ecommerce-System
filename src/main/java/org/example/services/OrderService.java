@@ -26,7 +26,7 @@ public class OrderService {
     public OrderService() {
         this.orderDAO = new OrderDAO();
         this.inventoryService = new InventoryService();
-        this.cacheManager = new OrderCacheManager();
+        this.cacheManager = OrderCacheManager.getInstance();
         this.mapper = new OrderMapper();
         this.performanceMonitor = new PerformanceMonitor();
     }

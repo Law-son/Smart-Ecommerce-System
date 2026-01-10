@@ -102,8 +102,7 @@ public class CatalogController implements Initializable {
             }
             
             // Performance timing is logged by ProductService via PerformanceMonitor
-            // Display product count and note that timing is in console
-            perfLabel.setText("Loaded " + products.size() + " products (check console for performance timing)");
+            perfLabel.setText("Loaded " + products.size() + " products");
             
             displayProducts(products);
             showLoading(false);
@@ -185,7 +184,7 @@ public class CatalogController implements Initializable {
             }
             
             // Performance timing is logged by ProductService via PerformanceMonitor
-            perfLabel.setText("Found " + products.size() + " products (check console for performance timing)");
+            perfLabel.setText("Found " + products.size() + " products");
             
             displayProducts(products);
         } catch (Exception e) {
@@ -231,7 +230,7 @@ public class CatalogController implements Initializable {
             }
             
             // Performance timing is logged by ProductService via PerformanceMonitor
-            perfLabel.setText("Sorted " + products.size() + " products (check console for performance timing)");
+            perfLabel.setText("Sorted " + products.size() + " products");
             
             displayProducts(products);
         } catch (Exception e) {

@@ -26,7 +26,7 @@ public class ProductService {
     public ProductService() {
         this.productDAO = new ProductDAO();
         this.reviewService = new ReviewService();
-        this.cacheManager = new ProductCacheManager();
+        this.cacheManager = ProductCacheManager.getInstance();
         this.mapper = new ProductMapper();
         this.performanceMonitor = new PerformanceMonitor();
     }
