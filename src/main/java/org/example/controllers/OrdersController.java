@@ -42,6 +42,12 @@ public class OrdersController implements Initializable {
     @FXML
     private Button refreshOrdersBtn;
     
+    @FXML
+    private Button backButton;
+    
+    @FXML
+    private ProgressIndicator loadingIndicator;
+    
     private OrderService orderService;
     private SessionManager sessionManager;
     
@@ -64,9 +70,30 @@ public class OrdersController implements Initializable {
         
         // Set up event handlers
         refreshOrdersBtn.setOnAction(e -> loadOrders());
+        backButton.setOnAction(e -> navigateToCatalog());
         
         // Load orders
         loadOrders();
+    }
+    
+    /**
+     * Shows or hides the loading indicator.
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+        }
+    }
+    
+    /**
+     * Navigates back to catalog.
+     */
+    private void navigateToCatalog() {
+        Scene scene = backButton.getScene();
+        if (scene != null) {
+            NavigationHelper.navigateTo("Catalog.fxml", NavigationHelper.getStage(scene));
+        }
     }
     
     /**
@@ -74,6 +101,7 @@ public class OrdersController implements Initializable {
      */
     private void loadOrders() {
         try {
+            showLoading(true);
             List<Order> orders;
             
             if (sessionManager.isAdmin()) {
@@ -85,6 +113,7 @@ public class OrdersController implements Initializable {
                 if (userId <= 0) {
                     ordersPerfLabel.setText("Error: Invalid user session");
                     ordersTable.getItems().clear();
+                    showLoading(false);
                     return;
                 }
                 orders = orderService.getOrdersByUser(userId);
@@ -94,6 +123,7 @@ public class OrdersController implements Initializable {
                 orders = new java.util.ArrayList<>();
                 ordersPerfLabel.setText("Error: Failed to load orders");
                 ordersTable.getItems().clear();
+                showLoading(false);
                 return;
             }
             
@@ -102,11 +132,13 @@ public class OrdersController implements Initializable {
             
             // Performance timing is logged by OrderService via PerformanceMonitor
             ordersPerfLabel.setText("Loaded " + orders.size() + " orders (check console for performance timing)");
+            showLoading(false);
         } catch (Exception e) {
             System.err.println("Error loading orders: " + e.getMessage());
             e.printStackTrace();
             ordersPerfLabel.setText("Error loading orders. Please try again.");
             ordersTable.getItems().clear();
+            showLoading(false);
         }
     }
     

@@ -9,6 +9,7 @@ import org.example.utils.cache.OrderCacheManager;
 import org.example.utils.mappers.OrderMapper;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -95,33 +96,36 @@ public class OrderService {
     
     /**
      * Gets all orders for a user with caching and performance timing.
+     * Loads cache only after successful DB fetch.
      *
      * @param userId User ID
      * @return List of Order objects
      */
     public List<Order> getOrdersByUser(int userId) {
-        return performanceMonitor.monitor("getOrdersByUser", () -> {
+        return performanceMonitor.monitor("Order fetch", () -> {
             // Check cache first
             List<OrderDTO> cachedDTOs = cacheManager.getByUser(userId);
-            if (cachedDTOs != null) {
-                // For simplicity, fetch from DB to get full Order objects
-                // In a real system, you might want to cache full Order objects
+            if (cachedDTOs != null && !cachedDTOs.isEmpty()) {
+                // Cache hit - convert DTOs to Orders (simplified, would need full mapping in production)
+                // For now, fetch from DB to get full Order objects
             }
             
-            // Fetch from database
+            // Fetch from database (cache miss or need full objects)
             List<Order> orders = orderDAO.getOrdersByUser(userId);
             
-            // Cache the results as DTOs
-            List<OrderDTO> orderDTOs = mapper.toDTOList(orders);
-            cacheManager.putByUser(userId, orderDTOs);
-            
-            // Also cache individual orders
-            for (Order order : orders) {
-                OrderDTO dto = mapper.toDTO(order);
-                cacheManager.put(order.getOrderId(), dto);
+            if (orders != null && !orders.isEmpty()) {
+                // Load cache only after successful DB fetch
+                List<OrderDTO> orderDTOs = mapper.toDTOList(orders);
+                cacheManager.putByUser(userId, orderDTOs);
+                
+                // Also cache individual orders
+                for (Order order : orders) {
+                    OrderDTO dto = mapper.toDTO(order);
+                    cacheManager.put(order.getOrderId(), dto);
+                }
             }
             
-            return orders;
+            return orders != null ? orders : new ArrayList<>();
         });
     }
     
@@ -152,11 +156,11 @@ public class OrderService {
      * @return true if update successful, false otherwise
      */
     public boolean updateOrderStatus(int orderId, String status) {
-        return performanceMonitor.monitor("updateOrderStatus", () -> {
+        return performanceMonitor.monitor("Order update", () -> {
             boolean success = orderDAO.updateOrderStatus(orderId, status);
             
             if (success) {
-                // Invalidate caches
+                // Invalidate caches when order status changes
                 cacheManager.invalidateOrder(orderId);
                 
                 // Get order to find userId for cache invalidation

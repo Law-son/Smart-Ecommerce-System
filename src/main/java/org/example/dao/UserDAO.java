@@ -29,17 +29,7 @@ public class UserDAO {
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    User user = new User();
-                    user.setUserId(rs.getInt("user_id"));
-                    user.setFullName(rs.getString("full_name"));
-                    user.setEmail(rs.getString("email"));
-                    user.setPasswordHash(rs.getString("password_hash"));
-                    user.setRole(rs.getString("role"));
-                    Timestamp createdAt = rs.getTimestamp("created_at");
-                    if (createdAt != null) {
-                        user.setCreatedAt(createdAt.toLocalDateTime());
-                    }
-                    return user;
+                    return mapResultSetToUser(rs);
                 }
             }
         } catch (SQLException e) {
@@ -51,6 +41,47 @@ public class UserDAO {
     }
 
     /**
+     * Retrieves a user by user ID.
+     *
+     * @param userId The ID of the user to search for
+     * @return User object if found, null otherwise
+     */
+    public User getUserById(int userId) {
+        String sql = "SELECT user_id, full_name, email, password_hash, role, created_at FROM users WHERE user_id = ?";
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, userId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToUser(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving user by ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setUserId(rs.getInt("user_id"));
+        user.setFullName(rs.getString("full_name"));
+        user.setEmail(rs.getString("email"));
+        user.setPasswordHash(rs.getString("password_hash"));
+        user.setRole(rs.getString("role"));
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) {
+            user.setCreatedAt(createdAt.toLocalDateTime());
+        }
+        return user;
+    }
+
+    /**
      * Creates a new user in the database.
      * Note: Password should be hashed in the service layer before calling this method.
      *
@@ -58,7 +89,8 @@ public class UserDAO {
      * @return true if user was created successfully, false otherwise
      */
     public boolean createUser(UserDTO userDTO) {
-        String sql = "INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)";
+        // Cast string to user_role enum type for PostgreSQL
+        String sql = "INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?::user_role)";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -115,7 +147,8 @@ public class UserDAO {
      * @return true if user was updated successfully, false otherwise
      */
     public boolean updateUser(int userId, UserDTO userDTO) {
-        String sql = "UPDATE users SET full_name = ?, email = ?, password_hash = ?, role = ? WHERE user_id = ?";
+        // Cast string to user_role enum type for PostgreSQL
+        String sql = "UPDATE users SET full_name = ?, email = ?, password_hash = ?, role = ?::user_role WHERE user_id = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

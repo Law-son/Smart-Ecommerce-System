@@ -66,49 +66,88 @@ public class LoginController implements Initializable {
             // Clear previous errors
             errorLabel.setText("");
             
-            // Validate input
-            if (email.isEmpty() || password.isEmpty()) {
-                errorLabel.setText("Please enter both email and password");
+            // Validate input with specific messages
+            if (email.isEmpty()) {
+                errorLabel.setText("Email is required");
                 return;
             }
             
-            // Attempt login via AuthService
-            User user = authService.login(email, password);
+            if (password.isEmpty()) {
+                errorLabel.setText("Password is required");
+                return;
+            }
             
-            if (user != null) {
+            // Attempt login via AuthService (returns specific error messages)
+            org.example.services.AuthResult result = authService.login(email, password);
+            
+            if (result.isSuccess()) {
                 // Store user in session (session caching)
+                User user = result.getUser();
                 sessionManager.setCurrentUser(user);
                 
                 // Log successful login with user details
                 System.out.println("User logged in: " + user.getFullName() + " (Role: " + user.getRole() + ")");
                 
-                // Navigate to Dashboard
+                // Navigate based on user role - Admin goes directly to Admin panel
                 Scene scene = loginButton.getScene();
                 if (scene != null) {
-                    boolean navigated = NavigationHelper.navigateTo("Dashboard.fxml", NavigationHelper.getStage(scene));
+                    boolean navigated;
+                    String targetScreen;
+                    
+                    // Admin users go directly to Admin panel, customers go to Catalog
+                    if (sessionManager.isAdmin()) {
+                        targetScreen = "Admin.fxml";
+                    } else {
+                        targetScreen = "Catalog.fxml";
+                    }
+                    
+                    navigated = NavigationHelper.navigateTo(targetScreen, NavigationHelper.getStage(scene));
                     if (!navigated) {
-                        errorLabel.setText("Failed to navigate to dashboard. Please try again.");
+                        errorLabel.setText("Failed to navigate to " + targetScreen + ". Please try again.");
+                        errorLabel.setVisible(true);
+                        errorLabel.setManaged(true);
                     }
                 } else {
                     errorLabel.setText("Navigation error. Please try again.");
+                    errorLabel.setVisible(true);
+                    errorLabel.setManaged(true);
                 }
             } else {
-                errorLabel.setText("Invalid email or password. Please try again.");
+                // Display specific error message from AuthService
+                errorLabel.setText(result.getErrorMessage());
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
             }
         } catch (Exception e) {
             System.err.println("Error during login: " + e.getMessage());
             e.printStackTrace();
-            errorLabel.setText("An error occurred during login. Please try again.");
+            errorLabel.setText("An unexpected error occurred: " + e.getMessage() + ". Please try again.");
+            errorLabel.setVisible(true);
+            errorLabel.setManaged(true);
         }
     }
     
     /**
      * Handles signup button click.
-     * TODO: Implement signup screen navigation
+     * Navigates to signup screen.
      */
     private void handleSignup() {
-        errorLabel.setText("Signup functionality not yet implemented");
-        // Future: Navigate to signup screen
+        try {
+            errorLabel.setText("");
+            Scene scene = signupButton.getScene();
+            if (scene != null) {
+                boolean navigated = NavigationHelper.navigateTo("Signup.fxml", NavigationHelper.getStage(scene));
+                if (!navigated) {
+                    errorLabel.setText("Failed to navigate to signup screen.");
+                }
+            } else {
+                errorLabel.setText("Navigation error. Please try again.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error navigating to signup: " + e.getMessage());
+            e.printStackTrace();
+            errorLabel.setText("Navigation error. Please try again.");
+        }
     }
 }
 

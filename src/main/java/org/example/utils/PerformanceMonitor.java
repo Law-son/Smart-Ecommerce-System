@@ -20,7 +20,7 @@ public class PerformanceMonitor {
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         
-        System.out.println("[PERF] " + operationName + " executed in " + duration + " ms");
+        System.out.println("[PERF] " + operationName + " took " + duration + " ms");
         return result;
     }
     

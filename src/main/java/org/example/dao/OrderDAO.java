@@ -131,7 +131,7 @@ public class OrderDAO {
      * @return true if order was created successfully, false otherwise
      */
     public boolean createOrder(OrderDTO orderDTO) {
-        String orderSql = "INSERT INTO orders (user_id, status, total_amount) VALUES (?, ?, ?)";
+        String orderSql = "INSERT INTO orders (user_id, status, total_amount) VALUES (?, ?::order_status, ?)";
         
         Connection conn = null;
         try {
@@ -203,7 +203,7 @@ public class OrderDAO {
      * @return true if order status was updated successfully, false otherwise
      */
     public boolean updateOrderStatus(int orderId, String status) {
-        String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+        String sql = "UPDATE orders SET status = ?::order_status WHERE order_id = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

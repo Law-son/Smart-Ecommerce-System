@@ -34,7 +34,13 @@ public class ProductCacheManager {
      * @return ProductDTO if found in cache, null otherwise
      */
     public ProductDTO getById(int productId) {
-        return productCache.get(productId);
+        ProductDTO cached = productCache.get(productId);
+        if (cached != null) {
+            System.out.println("[CACHE] Product cache HIT for product ID: " + productId);
+        } else {
+            System.out.println("[CACHE] Product cache MISS for product ID: " + productId);
+        }
+        return cached;
     }
     
     /**
@@ -46,13 +52,16 @@ public class ProductCacheManager {
         long currentTime = System.currentTimeMillis();
         if (productListCache != null && !productListCache.isEmpty() && 
             (currentTime - cacheTimestamp) < CACHE_TTL) {
+            System.out.println("[CACHE] Product list cache HIT (" + productListCache.size() + " products)");
             return new ArrayList<>(productListCache);
         }
+        System.out.println("[CACHE] Product list cache MISS or expired");
         return null;
     }
     
     /**
      * Puts a product into cache.
+     * Only caches after successful DB fetch.
      *
      * @param productId Product ID
      * @param product Product model
@@ -61,16 +70,19 @@ public class ProductCacheManager {
     public void put(int productId, Product product, ProductDTO dto) {
         productCache.put(productId, dto);
         productModelCache.put(productId, product);
+        System.out.println("[CACHE] Product cache LOADED for product ID: " + productId + " (" + dto.getName() + ")");
     }
     
     /**
      * Updates the product list cache.
+     * Only caches after successful DB fetch.
      *
      * @param productDTOs List of ProductDTO objects
      */
     public void updateListCache(List<ProductDTO> productDTOs) {
         this.productListCache = new ArrayList<>(productDTOs);
         this.cacheTimestamp = System.currentTimeMillis();
+        System.out.println("[CACHE] Product list cache LOADED (" + productDTOs.size() + " products)");
     }
     
     /**
@@ -90,12 +102,16 @@ public class ProductCacheManager {
     
     /**
      * Invalidates all product caches.
+     * Called when products are updated or deleted.
      */
     public void invalidate() {
+        int cacheSize = productCache.size();
+        int listSize = productListCache != null ? productListCache.size() : 0;
         productCache.clear();
         productModelCache.clear();
         productListCache.clear();
         cacheTimestamp = 0;
+        System.out.println("[CACHE] Product cache INVALIDATED (" + cacheSize + " individual, " + listSize + " list entries)");
     }
 }
 

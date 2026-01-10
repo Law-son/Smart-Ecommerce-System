@@ -31,7 +31,13 @@ public class OrderCacheManager {
      * @return List of OrderDTO if found in cache, null otherwise
      */
     public List<OrderDTO> getByUser(int userId) {
-        return userOrderCache.get(userId);
+        List<OrderDTO> orders = userOrderCache.get(userId);
+        if (orders != null) {
+            System.out.println("[CACHE] Order cache HIT for user: " + userId + " (" + orders.size() + " orders)");
+        } else {
+            System.out.println("[CACHE] Order cache MISS for user: " + userId);
+        }
+        return orders;
     }
     
     /**
@@ -41,27 +47,37 @@ public class OrderCacheManager {
      * @return OrderDTO if found in cache, null otherwise
      */
     public OrderDTO getById(int orderId) {
-        return orderCache.get(orderId);
+        OrderDTO order = orderCache.get(orderId);
+        if (order != null) {
+            System.out.println("[CACHE] Order cache HIT for order ID: " + orderId);
+        } else {
+            System.out.println("[CACHE] Order cache MISS for order ID: " + orderId);
+        }
+        return order;
     }
     
     /**
      * Puts orders for a user into cache.
+     * Only caches after successful DB fetch.
      *
      * @param userId User ID
      * @param orderDTOs List of OrderDTO objects
      */
     public void putByUser(int userId, List<OrderDTO> orderDTOs) {
         userOrderCache.put(userId, new ArrayList<>(orderDTOs));
+        System.out.println("[CACHE] Order cache LOADED for user: " + userId + " (" + orderDTOs.size() + " orders)");
     }
     
     /**
      * Puts an order into cache.
+     * Only caches after successful DB fetch.
      *
      * @param orderId Order ID
      * @param orderDTO OrderDTO object
      */
     public void put(int orderId, OrderDTO orderDTO) {
         orderCache.put(orderId, orderDTO);
+        System.out.println("[CACHE] Order cache LOADED for order ID: " + orderId);
     }
     
     /**

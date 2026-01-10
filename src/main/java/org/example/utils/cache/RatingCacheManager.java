@@ -23,17 +23,25 @@ public class RatingCacheManager {
      * @return Average rating if found in cache, null otherwise
      */
     public Double get(int productId) {
-        return ratingCache.get(productId);
+        Double rating = ratingCache.get(productId);
+        if (rating != null) {
+            System.out.println("[CACHE] Rating cache HIT for product: " + productId + " (rating: " + rating + ")");
+        } else {
+            System.out.println("[CACHE] Rating cache MISS for product: " + productId);
+        }
+        return rating;
     }
     
     /**
      * Puts average rating into cache.
+     * Only caches after successful computation.
      *
      * @param productId Product ID
      * @param rating Average rating
      */
     public void put(int productId, double rating) {
         ratingCache.put(productId, rating);
+        System.out.println("[CACHE] Rating cache LOADED for product: " + productId + " (rating: " + rating + ")");
     }
     
     /**

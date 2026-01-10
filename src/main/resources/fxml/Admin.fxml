@@ -3,161 +3,159 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox spacing="0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.controllers.AdminController">
    <children>
-      <HBox alignment="CENTER_LEFT">
+      <HBox alignment="CENTER_LEFT" styleClass="nav-bar">
          <children>
-            <Label text="Admin Panel" textAlignment="LEFT">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-            </Label>
+            <Label text="Admin Control Panel" styleClass="label-title" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="testDBButton" text="Test DB Connection" />
+            <Button fx:id="refreshDataBtn" text="Refresh Data" styleClass="button-primary" />
+            <Button fx:id="testDBButton" text="Check Database" styleClass="button-secondary" />
+            <Button fx:id="logoutButton" text="Logout" styleClass="button-danger" />
          </children>
-         <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
       </HBox>
       
       <Separator />
       
-      <TabPane VBox.vgrow="ALWAYS">
-         <tabs>
-            <Tab text="Products">
-               <content>
-                  <VBox spacing="10">
-                     <children>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                           <children>
-                              <Button fx:id="addProductBtn" text="Add Product" />
-                              <Button fx:id="editProductBtn" text="Edit Product" />
-                              <Button fx:id="deleteProductBtn" text="Delete Product" />
-                           </children>
+      <VBox spacing="20" VBox.vgrow="ALWAYS">
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
+         <children>
+            <TabPane VBox.vgrow="ALWAYS" styleClass="container">
+               <tabs>
+                  <Tab text="Product Management" closable="false">
+                     <content>
+                        <VBox spacing="15">
                            <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
-                        </HBox>
-                        
-                        <TableView fx:id="adminProductTable" VBox.vgrow="ALWAYS">
-                           <columns>
-                              <TableColumn text="ID" prefWidth="50" />
-                              <TableColumn text="Name" prefWidth="200" />
-                              <TableColumn text="Price" prefWidth="100" />
-                              <TableColumn text="Category" prefWidth="150" />
-                              <TableColumn text="Stock" prefWidth="100" />
-                           </columns>
-                        </TableView>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-            
-            <Tab text="Categories">
-               <content>
-                  <VBox spacing="10">
-                     <children>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
                            <children>
-                              <Button fx:id="addCategoryBtn" text="Add Category" />
-                              <Button fx:id="editCategoryBtn" text="Edit Category" />
-                              <Button fx:id="deleteCategoryBtn" text="Delete Category" />
+                              <HBox spacing="10" alignment="CENTER_LEFT">
+                                 <children>
+                                    <Button fx:id="addProductBtn" text="New Product" styleClass="button-success" />
+                                    <Button fx:id="editProductBtn" text="Edit Selected" styleClass="button-secondary" />
+                                    <Button fx:id="deleteProductBtn" text="Delete" styleClass="button-danger" />
+                                 </children>
+                              </HBox>
+                              
+                              <StackPane VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <TableView fx:id="adminProductTable">
+                                       <columns>
+                                          <TableColumn fx:id="productIndexCol" text="ID" prefWidth="60" />
+                                          <TableColumn fx:id="productNameCol" text="Product Name" prefWidth="250" />
+                                          <TableColumn fx:id="productPriceCol" text="Price" prefWidth="120" />
+                                          <TableColumn fx:id="productCategoryCol" text="Category" prefWidth="180" />
+                                          <TableColumn fx:id="productStockCol" text="Stock" prefWidth="100" />
+                                       </columns>
+                                    </TableView>
+                                    <ProgressIndicator fx:id="productsLoadingIndicator" visible="false" managed="false" />
+                                 </children>
+                              </StackPane>
                            </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <Tab text="Categories" closable="false">
+                     <content>
+                        <VBox spacing="15">
                            <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
-                        </HBox>
-                        
-                        <TableView fx:id="adminCategoryTable" VBox.vgrow="ALWAYS">
-                           <columns>
-                              <TableColumn text="ID" prefWidth="50" />
-                              <TableColumn text="Name" prefWidth="200" />
-                              <TableColumn text="Description" prefWidth="300" />
-                           </columns>
-                        </TableView>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-            
-            <Tab text="Orders">
-               <content>
-                  <VBox spacing="10">
-                     <children>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
                            <children>
-                              <Button fx:id="updateOrderStatusBtn" text="Update Order Status" />
+                              <HBox spacing="10" alignment="CENTER_LEFT">
+                                 <children>
+                                    <Button fx:id="addCategoryBtn" text="New Category" styleClass="button-success" />
+                                    <Button fx:id="editCategoryBtn" text="Edit Selected" styleClass="button-secondary" />
+                                    <Button fx:id="deleteCategoryBtn" text="Delete" styleClass="button-danger" />
+                                 </children>
+                              </HBox>
+                              
+                              <StackPane VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <TableView fx:id="adminCategoryTable">
+                                       <columns>
+                                          <TableColumn fx:id="categoryIndexCol" text="ID" prefWidth="100" />
+                                          <TableColumn fx:id="categoryNameCol" text="Category Name" prefWidth="400" />
+                                       </columns>
+                                    </TableView>
+                                    <ProgressIndicator fx:id="categoriesLoadingIndicator" visible="false" managed="false" />
+                                 </children>
+                              </StackPane>
                            </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <Tab text="Customer Orders" closable="false">
+                     <content>
+                        <VBox spacing="15">
                            <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
-                        </HBox>
-                        
-                        <TableView fx:id="adminOrderTable" VBox.vgrow="ALWAYS">
-                           <columns>
-                              <TableColumn text="Order ID" prefWidth="80" />
-                              <TableColumn text="Customer" prefWidth="150" />
-                              <TableColumn text="Date" prefWidth="120" />
-                              <TableColumn text="Total" prefWidth="100" />
-                              <TableColumn text="Status" prefWidth="100" />
-                           </columns>
-                        </TableView>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-            
-            <Tab text="Inventory">
-               <content>
-                  <VBox spacing="10">
-                     <children>
-                        <HBox spacing="10" alignment="CENTER_LEFT">
                            <children>
-                              <Button fx:id="updateStockBtn" text="Update Stock" />
+                              <HBox spacing="10" alignment="CENTER_LEFT">
+                                 <children>
+                                    <Button fx:id="updateOrderStatusBtn" text="Update Order Status" styleClass="button-primary" />
+                                 </children>
+                              </HBox>
+                              
+                              <StackPane VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <TableView fx:id="adminOrderTable">
+                                       <columns>
+                                          <TableColumn fx:id="orderIndexCol" text="ID" prefWidth="60" />
+                                          <TableColumn fx:id="orderIdCol" text="Order ID" prefWidth="100" />
+                                          <TableColumn fx:id="orderCustomerCol" text="Customer Email" prefWidth="200" />
+                                          <TableColumn fx:id="orderDateCol" text="Order Date" prefWidth="180" />
+                                          <TableColumn fx:id="orderTotalCol" text="Total" prefWidth="120" />
+                                          <TableColumn fx:id="orderStatusCol" text="Status" prefWidth="150" />
+                                       </columns>
+                                    </TableView>
+                                    <ProgressIndicator fx:id="ordersLoadingIndicator" visible="false" managed="false" />
+                                 </children>
+                              </StackPane>
                            </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+                  
+                  <Tab text="Inventory Control" closable="false">
+                     <content>
+                        <VBox spacing="15">
                            <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                            </padding>
-                        </HBox>
-                        
-                        <TableView fx:id="inventoryTable" VBox.vgrow="ALWAYS">
-                           <columns>
-                              <TableColumn text="Product ID" prefWidth="80" />
-                              <TableColumn text="Product Name" prefWidth="200" />
-                              <TableColumn text="Current Stock" prefWidth="120" />
-                              <TableColumn text="Reserved" prefWidth="100" />
-                              <TableColumn text="Available" prefWidth="100" />
-                           </columns>
-                        </TableView>
-                     </children>
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </VBox>
-               </content>
-            </Tab>
-         </tabs>
-      </TabPane>
-      
-      <Label fx:id="adminPerfLabel" text="" textFill="GRAY" wrapText="true" />
+                           <children>
+                              <HBox spacing="10" alignment="CENTER_LEFT">
+                                 <children>
+                                    <Button fx:id="updateStockBtn" text="Adjust Stock Level" styleClass="button-primary" />
+                                 </children>
+                              </HBox>
+                              
+                              <StackPane VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <TableView fx:id="inventoryTable">
+                                       <columns>
+                                          <TableColumn fx:id="inventoryIndexCol" text="ID" prefWidth="60" />
+                                          <TableColumn fx:id="inventoryProductNameCol" text="Product Name" prefWidth="400" />
+                                          <TableColumn fx:id="stockQuantityCol" text="Stock Quantity" prefWidth="200" />
+                                       </columns>
+                                    </TableView>
+                                    <ProgressIndicator fx:id="inventoryLoadingIndicator" visible="false" managed="false" />
+                                 </children>
+                              </StackPane>
+                           </children>
+                        </VBox>
+                     </content>
+                  </Tab>
+               </tabs>
+            </TabPane>
+            <Label fx:id="adminPerfLabel" text="" wrapText="true" styleClass="label-info" />
+         </children>
+      </VBox>
    </children>
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
 </VBox>
-
-
-
-
-

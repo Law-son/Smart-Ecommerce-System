@@ -2,8 +2,13 @@ package org.example.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.Scene;
 import org.example.dto.ProductDTO;
@@ -33,10 +38,22 @@ public class CatalogController implements Initializable {
     private GridPane productList;
     
     @FXML
-    private Button viewDetailsButton;
+    private Button ordersButton;
+    
+    @FXML
+    private Button cartButton;
+    
+    @FXML
+    private Button logoutButton;
+    
+    @FXML
+    private Button refreshButton;
     
     @FXML
     private Label perfLabel;
+    
+    @FXML
+    private ProgressIndicator loadingIndicator;
     
     private ProductService productService;
     private SessionManager sessionManager;
@@ -60,7 +77,10 @@ public class CatalogController implements Initializable {
         // Set up event handlers
         searchField.setOnAction(e -> handleSearch());
         sortCombo.setOnAction(e -> handleSort());
-        viewDetailsButton.setOnAction(e -> handleViewDetails());
+        ordersButton.setOnAction(e -> navigateToOrders());
+        cartButton.setOnAction(e -> navigateToCart());
+        refreshButton.setOnAction(e -> loadProducts());
+        logoutButton.setOnAction(e -> handleLogout());
         
         // Load products
         loadProducts();
@@ -71,11 +91,13 @@ public class CatalogController implements Initializable {
      */
     private void loadProducts() {
         try {
+            showLoading(true);
             List<ProductDTO> products = productService.getAllProducts();
             
             if (products == null) {
                 products = new java.util.ArrayList<>();
                 perfLabel.setText("Error: Failed to load products");
+                showLoading(false);
                 return;
             }
             
@@ -84,11 +106,59 @@ public class CatalogController implements Initializable {
             perfLabel.setText("Loaded " + products.size() + " products (check console for performance timing)");
             
             displayProducts(products);
+            showLoading(false);
         } catch (Exception e) {
             System.err.println("Error loading products: " + e.getMessage());
             e.printStackTrace();
             perfLabel.setText("Error loading products. Please try again.");
             displayProducts(new java.util.ArrayList<>());
+            showLoading(false);
+        }
+    }
+    
+    /**
+     * Shows or hides the loading indicator.
+     */
+    private void showLoading(boolean show) {
+        if (loadingIndicator != null) {
+            loadingIndicator.setVisible(show);
+            loadingIndicator.setManaged(show);
+        }
+    }
+    
+    /**
+     * Navigates to orders screen.
+     */
+    private void navigateToOrders() {
+        Scene scene = ordersButton.getScene();
+        if (scene != null) {
+            NavigationHelper.navigateTo("Orders.fxml", NavigationHelper.getStage(scene));
+        }
+    }
+    
+    /**
+     * Navigates to cart screen.
+     */
+    private void navigateToCart() {
+        Scene scene = cartButton.getScene();
+        if (scene != null) {
+            NavigationHelper.navigateTo("Cart.fxml", NavigationHelper.getStage(scene));
+        }
+    }
+    
+    /**
+     * Handles logout button click.
+     */
+    private void handleLogout() {
+        try {
+            sessionManager.clearSession();
+            Scene scene = logoutButton.getScene();
+            if (scene != null) {
+                NavigationHelper.navigateTo("Login.fxml", NavigationHelper.getStage(scene));
+            }
+        } catch (Exception e) {
+            System.err.println("Error during logout: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -198,22 +268,72 @@ public class CatalogController implements Initializable {
      * Creates a product card VBox for display.
      */
     private VBox createProductCard(ProductDTO product) {
-        VBox card = new VBox(10);
-        card.setStyle("-fx-padding: 10; -fx-border-color: #ccc; -fx-border-radius: 5;");
+        VBox card = new VBox(15);
+        card.getStyleClass().add("card");
+        card.setPrefWidth(260);
+        card.setMinWidth(260);
+        card.setMaxWidth(260);
+        
+        // Image container with stacking for placeholder and actual image
+        StackPane imageContainer = new StackPane();
+        imageContainer.getStyleClass().add("image-placeholder");
+        imageContainer.setPrefHeight(200);
+        imageContainer.setPrefWidth(260);
+        
+        // Default emoji placeholder
+        Label placeholderLabel = new Label("📦");
+        placeholderLabel.setStyle("-fx-font-size: 64px;");
+        
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(240);
+        imageView.setFitHeight(180);
+        imageView.setPreserveRatio(true);
+        
+        // Attempt to load actual image
+        if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
+            try {
+                Image img = new Image(product.getImageUrl(), true); // Background load
+                img.errorProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal) placeholderLabel.setVisible(true);
+                });
+                img.progressProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.doubleValue() == 1.0 && !img.isError()) {
+                        placeholderLabel.setVisible(false);
+                    }
+                });
+                imageView.setImage(img);
+                // If already loaded or loading, hide placeholder initially if not error
+                if (!img.isError()) placeholderLabel.setVisible(false);
+            } catch (Exception e) {
+                placeholderLabel.setVisible(true);
+            }
+        }
+        
+        imageContainer.getChildren().addAll(placeholderLabel, imageView);
         
         Label nameLabel = new Label(product.getName());
-        nameLabel.setStyle("-fx-font-weight: bold;");
+        nameLabel.getStyleClass().add("label-subtitle");
+        nameLabel.setWrapText(true);
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        nameLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        nameLabel.setMinHeight(40);
         
-        Label priceLabel = new Label("$" + product.getPrice());
-        priceLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px;");
+        Label priceLabel = new Label("$" + String.format("%.2f", product.getPrice()));
+        priceLabel.getStyleClass().add("label-success");
+        priceLabel.getStyleClass().add("label-price");
         
         Button selectButton = new Button("View Details");
+        selectButton.getStyleClass().add("button-primary");
+        selectButton.setMaxWidth(Double.MAX_VALUE);
         selectButton.setOnAction(e -> {
             selectedProduct = product;
             handleViewDetails();
         });
         
-        card.getChildren().addAll(nameLabel, priceLabel, selectButton);
+        card.getChildren().addAll(imageContainer, nameLabel, priceLabel, selectButton);
+        card.setAlignment(Pos.TOP_CENTER);
+        card.setPadding(new Insets(15));
+        
         return card;
     }
     
@@ -243,7 +363,7 @@ public class CatalogController implements Initializable {
         // Store product in state manager
         ProductStateManager.setProductToView(product);
         
-        Scene scene = viewDetailsButton.getScene();
+        Scene scene = productList.getScene();
         if (scene != null) {
             NavigationHelper.navigateTo("ProductDetails.fxml", NavigationHelper.getStage(scene));
         }
@@ -253,7 +373,7 @@ public class CatalogController implements Initializable {
      * Navigates to Login screen.
      */
     private void navigateToLogin() {
-        Scene scene = viewDetailsButton.getScene();
+        Scene scene = searchField.getScene();
         if (scene != null) {
             NavigationHelper.navigateTo("Login.fxml", NavigationHelper.getStage(scene));
         }

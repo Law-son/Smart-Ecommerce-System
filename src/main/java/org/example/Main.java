@@ -21,6 +21,10 @@ public class Main extends Application {
             Parent root = loader.load();
             
             Scene scene = new Scene(root, 600, 400);
+            // Apply modern CSS stylesheet
+            String css = getClass().getResource("/styles/modern.css").toExternalForm();
+            scene.getStylesheets().add(css);
+            
             primaryStage.setTitle("Smart E-Commerce System - Login");
             primaryStage.setScene(scene);
             primaryStage.setResizable(true); // Enable resizable UI globally
