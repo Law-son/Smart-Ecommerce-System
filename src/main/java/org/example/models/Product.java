@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class Product {
     private int productId;
     private int categoryId;
+    private String categoryName;
     private String name;
     private String description;
     private BigDecimal price;
@@ -20,9 +21,10 @@ public class Product {
     }
 
     // Full constructor
-    public Product(int productId, int categoryId, String name, String description, BigDecimal price, String imageUrl, LocalDateTime createdAt) {
+    public Product(int productId, int categoryId, String categoryName, String name, String description, BigDecimal price, String imageUrl, LocalDateTime createdAt) {
         this.productId = productId;
         this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.name = name;
         this.description = description;
         this.price = price;
@@ -45,6 +47,14 @@ public class Product {
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public String getName() {

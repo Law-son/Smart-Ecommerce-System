@@ -75,7 +75,7 @@ public class CatalogController implements Initializable {
         sortCombo.setValue("Price ↑");
         
         // Set up event handlers
-        searchField.setOnAction(e -> handleSearch());
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> handleSearch());
         sortCombo.setOnAction(e -> handleSort());
         ordersButton.setOnAction(e -> navigateToOrders());
         cartButton.setOnAction(e -> navigateToCart());
@@ -173,7 +173,7 @@ public class CatalogController implements Initializable {
             if (keyword.isEmpty()) {
                 products = productService.getAllProducts();
             } else {
-                products = productService.searchProductsByName(keyword);
+                products = productService.searchProductsByNameOrCategory(keyword);
             }
             
             if (products == null) {
