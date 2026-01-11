@@ -65,13 +65,13 @@ public class ProductService {
     }
     
     /**
-     * Searches products by name with cache-first strategy.
+     * Searches products by name or category with cache-first strategy.
      * Manual search implementation without streams.
      *
      * @param keyword Search keyword (case-insensitive, trimmed)
      * @return List of ProductDTO objects matching the keyword
      */
-    public List<ProductDTO> searchProductsByName(String keyword) {
+    public List<ProductDTO> searchProductsByNameOrCategory(String keyword) {
         return performanceMonitor.monitor("Search fallback query", () -> {
             // Trim and normalize keyword (case-insensitive)
             String searchKeyword = (keyword != null ? keyword.trim() : "").toLowerCase();
@@ -86,9 +86,11 @@ public class ProductService {
                 // Manual search in cache (no streams)
                 List<ProductDTO> filtered = new ArrayList<>();
                 for (ProductDTO product : cachedResults) {
-                    if (product != null && product.getName() != null) {
-                        String productName = product.getName().toLowerCase();
-                        if (productName.contains(searchKeyword)) {
+                    if (product != null) {
+                        String productName = product.getName() != null ? product.getName().toLowerCase() : "";
+                        String categoryName = product.getCategoryName() != null ? product.getCategoryName().toLowerCase() : "";
+                        
+                        if (productName.contains(searchKeyword) || categoryName.contains(searchKeyword)) {
                             filtered.add(product);
                         }
                     }
@@ -105,7 +107,7 @@ public class ProductService {
             }
             
             // Cache miss or no matches - fallback to database
-            List<Product> products = productDAO.searchProductsByName(keyword);
+            List<Product> products = productDAO.searchProductsByNameOrCategory(keyword);
             List<ProductDTO> result = mapper.toDTOList(products);
             
             // Update cache after successful DB fetch
@@ -118,6 +120,17 @@ public class ProductService {
             
             return result;
         });
+    }
+
+    /**
+     * Searches products by name with cache-first strategy.
+     * Manual search implementation without streams.
+     *
+     * @param keyword Search keyword (case-insensitive, trimmed)
+     * @return List of ProductDTO objects matching the keyword
+     */
+    public List<ProductDTO> searchProductsByName(String keyword) {
+        return searchProductsByNameOrCategory(keyword);
     }
     
     /**

@@ -23,7 +23,10 @@ public class ProductDAO {
      * @return Product object if found, null otherwise
      */
     public Product getProductById(int id) {
-        String sql = "SELECT product_id, category_id, name, description, price, image_url, created_at FROM products WHERE product_id = ?";
+        String sql = "SELECT p.product_id, p.category_id, p.name, p.description, p.price, p.image_url, p.created_at, c.category_name " +
+                     "FROM products p " +
+                     "JOIN categories c ON p.category_id = c.category_id " +
+                     "WHERE p.product_id = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -39,10 +42,14 @@ public class ProductDAO {
                     product.setDescription(rs.getString("description"));
                     product.setPrice(rs.getBigDecimal("price"));
                     product.setImageUrl(rs.getString("image_url"));
+                    product.setCategoryName(rs.getString("category_name"));
                     Timestamp createdAt = rs.getTimestamp("created_at");
                     if (createdAt != null) {
                         product.setCreatedAt(createdAt.toLocalDateTime());
                     }
+                    // We'll store category name in Product temporarily or handle it in mapper
+                    // For now, let's just make sure the query works. 
+                    // I'll add categoryName to Product model too if needed.
                     return product;
                 }
             }
@@ -60,7 +67,10 @@ public class ProductDAO {
      * @return List of all Product objects
      */
     public List<Product> getAllProducts() {
-        String sql = "SELECT product_id, category_id, name, description, price, image_url, created_at FROM products ORDER BY name";
+        String sql = "SELECT p.product_id, p.category_id, p.name, p.description, p.price, p.image_url, p.created_at, c.category_name " +
+                     "FROM products p " +
+                     "JOIN categories c ON p.category_id = c.category_id " +
+                     "ORDER BY p.name";
         List<Product> products = new ArrayList<>();
         
         try (Connection conn = DatabaseConfig.getConnection();
@@ -178,6 +188,52 @@ public class ProductDAO {
     }
 
     /**
+     * Searches for products by name or category name (case-insensitive).
+     *
+     * @param keyword The search keyword
+     * @return List of Product objects matching the keyword
+     */
+    public List<Product> searchProductsByNameOrCategory(String keyword) {
+        String sql = "SELECT p.product_id, p.category_id, p.name, p.description, p.price, p.image_url, p.created_at " +
+                     "FROM products p " +
+                     "JOIN categories c ON p.category_id = c.category_id " +
+                     "WHERE LOWER(p.name) LIKE LOWER(?) OR LOWER(c.category_name) LIKE LOWER(?) " +
+                     "ORDER BY p.name";
+        List<Product> products = new ArrayList<>();
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + keyword + "%";
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Product product = new Product();
+                    product.setProductId(rs.getInt("product_id"));
+                    product.setCategoryId(rs.getInt("category_id"));
+                    product.setName(rs.getString("name"));
+                    product.setDescription(rs.getString("description"));
+                    product.setPrice(rs.getBigDecimal("price"));
+                    product.setImageUrl(rs.getString("image_url"));
+                    product.setCategoryName(rs.getString("category_name"));
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    if (createdAt != null) {
+                        product.setCreatedAt(createdAt.toLocalDateTime());
+                    }
+                    products.add(product);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching products by name or category: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return products;
+    }
+
+    /**
      * Searches for products by name (case-insensitive).
      *
      * @param keyword The search keyword
@@ -201,6 +257,7 @@ public class ProductDAO {
                     product.setDescription(rs.getString("description"));
                     product.setPrice(rs.getBigDecimal("price"));
                     product.setImageUrl(rs.getString("image_url"));
+                    product.setCategoryName(rs.getString("category_name"));
                     Timestamp createdAt = rs.getTimestamp("created_at");
                     if (createdAt != null) {
                         product.setCreatedAt(createdAt.toLocalDateTime());

@@ -10,16 +10,18 @@ public class ProductDTO {
     private String description;
     private BigDecimal price;
     private int categoryId;
+    private String categoryName;
     private String imageUrl;
 
     public ProductDTO() {
     }
 
-    public ProductDTO(String name, String description, BigDecimal price, int categoryId, String imageUrl) {
+    public ProductDTO(String name, String description, BigDecimal price, int categoryId, String categoryName, String imageUrl) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.imageUrl = imageUrl;
     }
 
@@ -53,6 +55,14 @@ public class ProductDTO {
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public String getImageUrl() {
