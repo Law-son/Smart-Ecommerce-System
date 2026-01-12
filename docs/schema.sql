@@ -1,124 +1,128 @@
--- Smart Ecommerce System Database Schema
--- Updated: 2026-01-11
+-- Smart E-Commerce System Database Setup Script
+-- Database: ecomdb
+-- PostgreSQL
 
--- Drop tables if they exist (in reverse order of dependencies)
-DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS inventory;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS users;
+-- Create database (run this separately if needed)
+-- CREATE DATABASE ecomdb;
 
--- Drop enums if they exist
-DROP TYPE IF EXISTS order_status;
-DROP TYPE IF EXISTS user_role;
+-- Connect to ecomdb database
+-- \c ecomdb;
 
--- Create Enums
-CREATE TYPE user_role AS ENUM ('CUSTOMER', 'ADMIN');
+-- Create ENUM types
+CREATE TYPE user_role AS ENUM ('ADMIN', 'CUSTOMER');
 CREATE TYPE order_status AS ENUM ('PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED');
 
--- Create Tables
-
--- 1. Users Table
+-- Create users table
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(120) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'CUSTOMER',
+    role user_role NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 2. Categories Table
+-- Create categories table
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
-    category_name VARCHAR(50) UNIQUE NOT NULL,
+    category_name VARCHAR(80) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Products Table
+-- Create products table
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
-    category_id INT NOT NULL REFERENCES categories(category_id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
+    category_id INT NOT NULL,
+    name VARCHAR(120) NOT NULL,
     description TEXT,
-    price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-    image_url TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+    image_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_product_category
+        FOREIGN KEY (category_id)
+        REFERENCES categories(category_id)
+        ON DELETE CASCADE
 );
 
--- 4. Inventory Table
+-- Create inventory table
 CREATE TABLE inventory (
     inventory_id SERIAL PRIMARY KEY,
-    product_id INT UNIQUE NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-    quantity INT NOT NULL DEFAULT 0 CHECK (quantity >= 0),
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    product_id INT UNIQUE NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_inventory_product
+        FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
 );
 
--- 5. Orders Table
+-- Create orders table
 CREATE TABLE orders (
     order_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status order_status NOT NULL DEFAULT 'PENDING',
-    total_amount DECIMAL(12, 2) NOT NULL CHECK (total_amount >= 0)
+    status order_status NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL CHECK (total_amount >= 0),
+    CONSTRAINT fk_order_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
 );
 
--- 6. Order Items Table
+-- Create order_items table
 CREATE TABLE order_items (
     order_item_id SERIAL PRIMARY KEY,
-    order_id INT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
-    product_id INT NOT NULL REFERENCES products(product_id),
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
     quantity INT NOT NULL CHECK (quantity > 0),
-    price_at_time DECIMAL(10, 2) NOT NULL CHECK (price_at_time >= 0)
+    unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
+    CONSTRAINT fk_order_item_order
+        FOREIGN KEY (order_id)
+        REFERENCES orders(order_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_order_item_product
+        FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
 );
 
--- 7. Reviews Table
+-- Create reviews table
 CREATE TABLE reviews (
     review_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    product_id INT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_review_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_review_product
+        FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
 );
 
--- Create Indices for Performance
+-- Create indexes for better query performance
+CREATE INDEX idx_product_name ON products(name);
+CREATE INDEX idx_category_name ON categories(category_name);
+CREATE INDEX idx_order_user ON orders(user_id);
+CREATE INDEX idx_order_date ON orders(order_date);
+CREATE INDEX idx_inventory_product ON inventory(product_id);
+CREATE INDEX idx_review_product ON reviews(product_id);
 
--- For faster search by product name (case-insensitive)
-CREATE INDEX idx_products_name_lower ON products (LOWER(name));
+-- Create trigger function to update last_updated timestamp in inventory
+CREATE OR REPLACE FUNCTION update_inventory_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.last_updated = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- For faster search by category name (case-insensitive)
-CREATE INDEX idx_categories_name_lower ON categories (LOWER(category_name));
-
--- For faster filtering by category
-CREATE INDEX idx_products_category_id ON products (category_id);
-
--- For faster user lookups by email
-CREATE INDEX idx_users_email ON users (email);
-
--- For faster order lookups by user
-CREATE INDEX idx_orders_user_id ON orders (user_id);
-
--- For faster review lookups by product
-CREATE INDEX idx_reviews_product_id ON reviews (product_id);
-
--- Insert Sample Data
-
--- Sample Categories
-INSERT INTO categories (category_name) VALUES 
-('Electronics'), 
-('Clothing'), 
-('Home & Garden'), 
-('Books'), 
-('Toys');
-
--- Sample Admin User (password is 'admin123' hashed - placeholder)
-INSERT INTO users (full_name, email, password_hash, role) VALUES 
-('Admin User', 'admin@example.com', 'hashed_password_here', 'ADMIN');
-
--- Sample Customer User (password is 'customer123' hashed - placeholder)
-INSERT INTO users (full_name, email, password_hash, role) VALUES 
-('John Doe', 'john@example.com', 'hashed_password_here', 'CUSTOMER');
-
+-- Create trigger for inventory last_updated
+CREATE TRIGGER trigger_update_inventory_timestamp
+    BEFORE UPDATE ON inventory
+    FOR EACH ROW
+    EXECUTE FUNCTION update_inventory_timestamp();
